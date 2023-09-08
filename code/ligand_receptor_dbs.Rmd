@@ -1,0 +1,87 @@
+---
+title: "Ligand Receptor databases"
+author: "Amrit Singh"
+date: "2023-07-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#  Baderlab
+
+```{r}
+## Baderlab
+## https://baderlab.org/CellCellInteractions?action=AttachFile&do=view&target=receptor_ligand_interactions_mitab_v1.0_April2017.txt.zip
+lr_baderlab <- read.delim(here::here("data/ligand_receptor_db/baderlab_receptor_ligand_interactions_mitab_v1.0_April2017.txt"))
+
+baderlab <- split(lr_baderlab$AliasB, lr_baderlab$AliasA) %>% lapply(., function(i){
+  unique(i)
+})
+
+```
+
+# Nichenet
+
+```{r}
+# https://zenodo.org/record/7074291
+lr_nichenet <- readRDS(here::here("data/ligand_receptor_db/nichenet_lr_network_human_21122021.rds"))
+
+nichenet <- split(lr_nichenet$to, lr_nichenet$from) %>% lapply(., function(i){
+  unique(i)
+})
+
+```
+
+# FAMTOM5
+
+```{r}
+## FAMTOM5
+# https://fantom.gsc.riken.jp/5/suppl/Ramilowski_et_al_2015/
+# https://www.nature.com/articles/ncomms8866
+
+lr_fantom5 <- read.delim(here::here("data/ligand_receptor_db/fantom.gsc.riken.jp_5_suppl_Ramilowski_et_al_2015_data_PairsLigRec.txt"))
+
+fantom5 <- split(lr_fantom5$Receptor.ApprovedSymbol, lr_fantom5$Ligand.ApprovedSymbol) %>% lapply(., function(i){
+  unique(i)
+})
+```
+
+# CITEDB
+
+```{r}
+# CITEDB
+# https://academic.oup.com/bioinformatics/article/38/22/5144/6731922?login=false
+
+lr_citedb <- readxl::read_xlsx(here::here("data/ligand_receptor_db/CITEdb1.1.xlsx"))
+lr_citedb <- strsplit(lr_citedb$Interaction.details, ":")
+lr_citedb <- do.call(rbind, lr_citedb[sapply(lr_citedb, length) == 2])
+lr_citedb <- as.data.frame(lr_citedb[!(lr_citedb[,2] %in% c("receptor", "cognate receptors")), ])
+colnames(lr_citedb) <- c("ligand", "receptor")
+
+citedb <- split(lr_citedb$receptor, lr_citedb$ligand) %>% lapply(., function(i){
+  unique(i)
+})
+```
+
+# all dbs
+
+```{r}
+lr_dbs <- data.frame(ligand = c(rep(names(baderlab), sapply(baderlab, length)),
+                      rep(names(nichenet), sapply(nichenet, length)),
+                      rep(names(fantom5), sapply(fantom5, length)),
+                      rep(names(citedb), sapply(citedb, length))),
+           receptor = c(unlist(baderlab), unlist(nichenet), unlist(fantom5), unlist(citedb)))
+all_dbs <- split(lr_dbs$receptor, lr_dbs$ligand) %>% lapply(., function(i){
+  unique(i)
+})
+
+```
+
+## save dbs
+
+```{r}
+save(baderlab, nichenet, fantom5, citedb, all_dbs, file = here::here("data", "ligand_receptor_db.RData"))
+```
+
