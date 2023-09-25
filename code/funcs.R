@@ -19,8 +19,8 @@ cfgsea <- function(eset, y, obs_id, db){
   result[order(result)]
 }
 
-cfgsea_p = function(eset, y, obs_id, dbs, cores = 4){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores))
+cfgsea_p = function(eset, y, obs_id, dbs, cores){
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", 2), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cfgsea"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
@@ -41,8 +41,8 @@ cgsva = function(eset, y, obs_id, db){
   pval[order(pval)]
 }
 
-cgsva_p = function(eset, y, obs_id, dbs, cores = 4){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores))
+cgsva_p = function(eset, y, obs_id, dbs, cores){
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cgsva"), 
                           envir = environment())
   result = parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
@@ -65,8 +65,9 @@ cpca = function(eset, y, obs_id, db){
   names(pval) <- rownames(top)
   pval[order(pval)]
 }
-cpca_p = function(eset, y, obs_id, dbs, cores = 4){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores))
+
+cpca_p = function(eset, y, obs_id, dbs, cores){
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cpca"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
@@ -88,8 +89,9 @@ cpcr = function(eset, y, obs_id, db){
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
   coef[order(coef, decreasing = TRUE)]
 }
-cpcr_p = function(eset, y, obs_id, dbs, cores = 4){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores))
+
+cpcr_p = function(eset, y, obs_id, dbs, cores){
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cpcr"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
@@ -108,8 +110,9 @@ cgsvar = function(eset, y, obs_id, db){
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
   coef[order(coef, decreasing = TRUE)]
 }
-cgsvar_p = function(eset, y, obs_id, dbs, cores = 4){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores))
+
+cgsvar_p = function(eset, y, obs_id, dbs, cores){
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cgsvar"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {

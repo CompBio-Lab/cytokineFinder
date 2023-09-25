@@ -22,6 +22,7 @@ source(here::here("code/funcs.R"))
 # anti-TNF therapy in patients with ulcerative colitis (UC)
 
 ```{r}
+# retrieve GEO data set and clean data
 geo <- getGEO("GSE92415",GSEMatrix=TRUE)
 e1 <- geo[["GSE92415_series_matrix.txt.gz"]]
 phenoData <- pData(e1)
@@ -65,19 +66,8 @@ dbs <- lapply(dbs_all, function(db){
 # Run all methods
 
 ```{r}
-
-
-## rm genes from db if not in eset
-dbs <- lapply(dbs_all, function(db){
-  db <- db[names(db) %in% rownames(eset)]
-  db <- lapply(db, function(i){
-    intersect(i, rownames(eset))
-  })
-  db[sapply(db, length) > 0]
-})
-
-
-cores <- 16
+# Fast GSEA, run GSEA for all datasets and rank
+cores <- 4
 
 funs <- list(cfgsea_p = cfgsea_p,
              cgsva_p = cgsva_p,
@@ -116,12 +106,11 @@ do.call(rbind, ranks) %>%
 ## heatmap
 
 ```{r}
-
-
 df <- as.data.frame(do.call(rbind, ranks))
 library(pheatmap)
 pheatmap(df)
-
+```
+```{r}
 p <- df %>% 
   mutate(ann = rownames(.)) %>% 
   gather(method, rank, -ann) %>% 
@@ -132,6 +121,9 @@ p <- df %>%
   xlab("Rank") +
   ggtitle("Rank of set of receptors that TNF binds to") +
   theme_bw()
+
+plot(p)
+
 ```
 
 
