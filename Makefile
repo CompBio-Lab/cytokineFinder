@@ -1,6 +1,6 @@
 DOCKERHUB_USERNAME=jeffreysjtang
 IMAGE_VERSION=v0.1
-IMAGE_NAME=cytokineFinder
+IMAGE_NAME=cytokinefinder
 
 # Docker 	
 build:
