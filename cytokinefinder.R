@@ -8,7 +8,7 @@ dbs_all = list(baderlab=baderlab, nichenet=nichenet,
 source(here::here("code/funcs.R"))
 
 # retrieve GEO data set and clean data
-geo_data <- "GSE220972"
+geo_data <- "GSE16879"
 series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
 geo <- getGEO(geo_data, GSEMatrix=TRUE)
 e1 <- geo[[series_matrix]]
@@ -19,8 +19,8 @@ exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
 
-Tofacitinib <- subset(phenoData, `treatment:ch1` == "Tofacitinib")
-eset <- exp[rownames(ann), rownames(Tofacitinib)]
+golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
+eset <- exp[rownames(ann), rownames(golimumab)]
 all(rownames(eset) == rownames(ann))
 
 gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
@@ -35,8 +35,8 @@ X = eset[id_gensym$probeids, ] %>%
 
 eset <- as.matrix(X[,-1])
 rownames(eset) <- X$genesym
-y = Tofacitinib$`visit:ch1`
-obs_id = Tofacitinib$`subject:ch1`
+y = golimumab$`visit:ch1`
+obs_id = golimumab$`subject:ch1`
 
 ## rm genes from db if not in eset
 dbs <- lapply(dbs_all, function(db){

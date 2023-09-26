@@ -1,9 +1,20 @@
 ## enrichment functions
 
+create_design <- function(y, obs_id){
+  if(is.null(obs_id)) {
+    #for unpaired datasets
+    design <- model.matrix(~y) 
+  } else{
+    design <- model.matrix(~y+obs_id) 
+  }
+  return(design)
+}
+
 ## FGSEA
 cfgsea <- function(eset, y, obs_id, db){
   # differential expression analysis
-  design <- model.matrix(~y+obs_id)
+  design <- create_design(y, obs_id)
+  
   fit <- limma::eBayes(limma::lmFit(eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
   
