@@ -14,4 +14,4 @@ push:
 
 sockeye_pull:
 	module load singularity; \
-	singularity pull --name modc docker://$(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
+	singularity pull --name cytokinefinder docker://$(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
