@@ -1,31 +1,17 @@
----
-title: "GSE92415"
-author: "Amrit Singh"
-date: "2023-07-26"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
 
 library(GEOquery)
 load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
-          fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
+               fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
 
 source(here::here("code/funcs.R"))
 
-```
-
-# anti-TNF therapy in patients with ulcerative colitis (UC)
-
-```{r}
 # retrieve GEO data set and clean data
-geo_data <- "GSE92415"
+geo_data <- "GSE220972"
+series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
 geo <- getGEO(geo_data, GSEMatrix=TRUE)
-e1 <- geo[[paste0(geo_data, "series_matrix.txt.gz")]]
+e1 <- geo[[series_matrix]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
 ann <- ann[ann$`Gene Symbol` != "", ]
@@ -33,13 +19,13 @@ exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
 
-golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
-eset <- exp[rownames(ann), rownames(golimumab)]
+Tofacitinib <- subset(phenoData, `treatment:ch1` == "Tofacitinib")
+eset <- exp[rownames(ann), rownames(Tofacitinib)]
 all(rownames(eset) == rownames(ann))
 
 gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
 id_gensym <- data.frame(gensym = unlist(gensym),
-           probeids = rep(rownames(ann), sapply(gensym, length)))
+                        probeids = rep(rownames(ann), sapply(gensym, length)))
 
 X = eset[id_gensym$probeids, ] %>% 
   as.data.frame() %>% 
@@ -49,8 +35,8 @@ X = eset[id_gensym$probeids, ] %>%
 
 eset <- as.matrix(X[,-1])
 rownames(eset) <- X$genesym
-y = golimumab$`visit:ch1`
-obs_id = golimumab$`subject:ch1`
+y = Tofacitinib$`visit:ch1`
+obs_id = Tofacitinib$`subject:ch1`
 
 ## rm genes from db if not in eset
 dbs <- lapply(dbs_all, function(db){
@@ -61,12 +47,6 @@ dbs <- lapply(dbs_all, function(db){
   db[sapply(db, length) > 0]
 })
 
-
-```
-
-# Run all methods
-
-```{r}
 # Fast GSEA, run GSEA for all datasets and rank
 cores <- 4
 
@@ -86,48 +66,4 @@ ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
 
-```
-
-# visualizations
-
-## ranks
-
-```{r}
-do.call(rbind, ranks) %>% 
-  as.data.frame() %>% 
-  mutate(method = gsub("_p", "", rownames(.))) %>% 
-  gather(database, rank, -method) %>% 
-  mutate(method_db = paste(method, database, sep="_")) %>% 
-  ggplot(aes(x = rank, y = reorder(method_db, rank), fill = database)) +
-  geom_bar(stat = "identity", position = "dodge")
-
-```
-
-
-## heatmap
-
-```{r}
-df <- as.data.frame(do.call(rbind, ranks))
-library(pheatmap)
-pheatmap(df)
-```
-```{r}
-p <- df %>% 
-  mutate(ann = rownames(.)) %>% 
-  gather(method, rank, -ann) %>% 
-  mutate(method_ann = factor(paste(method, ann, sep="_"))) %>% 
-  ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
-  geom_bar(stat = "identity") +
-  ylab("Method+annotation") +
-  xlab("Rank") +
-  ggtitle("Rank of set of receptors that TNF binds to") +
-  theme_bw()
-
-plot(p)
-
-```
-
-```{r}
 saveRDS(result, paste0("../results/",geo_data,".rds"))
-```
-

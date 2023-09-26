@@ -1,0 +1,230 @@
+0:knitr::opts_chunk$set(echo = TRUE)
+0:library(tidyverse)
+0:library(GEOquery)
+0:load(here::here("data/ligand_receptor_db.RData"))
+0:dbs_all = list(baderlab=baderlab, nichenet=nichenet,
+0:fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
+0:source(here::here("code/funcs.R"))
+0:# retrieve GEO data set and clean data
+0:geo <- getGEO("GSE92415",GSEMatrix=TRUE)
+0:e1 <- geo[["GSE92415_series_matrix.txt.gz"]]
+0:phenoData <- pData(e1)
+0:ann <- e1@featureData@data
+0:ann <- ann[ann$`Gene Symbol` != "", ]
+0:exp <- exprs(e1)
+0:dim(phenoData); dim(ann); dim(exp);
+0:all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
+0:golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
+0:eset <- exp[rownames(ann), rownames(golimumab)]
+0:all(rownames(eset) == rownames(ann))
+0:gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
+0:id_gensym <- data.frame(gensym = unlist(gensym),
+0:probeids = rep(rownames(ann), sapply(gensym, length)))
+0:X = eset[id_gensym$probeids, ] %>%
+0:as.data.frame() %>%
+0:mutate(genesym = id_gensym$gensym) %>%
+0:group_by(genesym) %>%
+0:summarise(across(everything(), mean, na.rm=TRUE))
+0:eset <- as.matrix(X[,-1])
+0:rownames(eset) <- X$genesym
+0:y = golimumab$`visit:ch1`
+0:obs_id = golimumab$`subject:ch1`
+0:## rm genes from db if not in eset
+0:dbs <- lapply(dbs_all, function(db){
+0:db <- db[names(db) %in% rownames(eset)]
+0:db <- lapply(db, function(i){
+0:intersect(i, rownames(eset))
+0:})
+0:db[sapply(db, length) > 0]
+0:})
+0:# Fast GSEA, run GSEA for all datasets and rank
+0:cores <- 4
+0:funs <- list(cfgsea_p = cfgsea_p,
+0:cgsva_p = cgsva_p,
+0:cpca_p = cpca_p,
+0:cpcr_p = cpcr_p,
+0:cgsvar_p = cgsvar_p)
+0:run_all = function(eset, y, obs_id, dbs, cores, funs){
+0:lapply(funs, function(fun) fun(eset, y, obs_id, dbs, cores))
+0:}
+0:result <- run_all(eset, y, obs_id, dbs, cores, funs)
+0:source("~/compbio_lab/cytokineFinder/code/funcs.R", echo=TRUE)
+0:ranks <- lapply(result, function(i){
+0:100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
+0:})
+0:do.call(rbind, ranks) %>%
+0:as.data.frame() %>%
+0:mutate(method = gsub("_p", "", rownames(.))) %>%
+0:gather(database, rank, -method) %>%
+0:mutate(method_db = paste(method, database, sep="_")) %>%
+0:ggplot(aes(x = rank, y = reorder(method_db, rank), fill = database)) +
+0:geom_bar(stat = "identity", position = "dodge")
+0:df <- as.data.frame(do.call(rbind, ranks))
+0:library(pheatmap)
+0:pheatmap(df)
+0:p <- df %>%
+0:mutate(ann = rownames(.)) %>%
+0:gather(method, rank, -ann) %>%
+0:mutate(method_ann = factor(paste(method, ann, sep="_"))) %>%
+0:ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
+0:geom_bar(stat = "identity") +
+0:ylab("Method+annotation") +
+0:xlab("Rank") +
+0:ggtitle("Rank of set of receptors that TNF binds to") +
+0:theme_bw()
+0:p
+0:df <- as.data.frame(do.call(rbind, ranks))
+0:df <- as.data.frame(do.call(rbind, ranks))
+0:library(pheatmap)
+0:pheatmap(df)
+0:p <- df %>%
+0:mutate(ann = rownames(.)) %>%
+0:gather(method, rank, -ann) %>%
+0:mutate(method_ann = factor(paste(method, ann, sep="_"))) %>%
+0:ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
+0:geom_bar(stat = "identity") +
+0:ylab("Method+annotation") +
+0:xlab("Rank") +
+0:ggtitle("Rank of set of receptors that TNF binds to") +
+0:theme_bw()
+0:p <- df %>%
+0:mutate(ann = rownames(.)) %>%
+0:gather(method, rank, -ann) %>%
+0:mutate(method_ann = factor(paste(method, ann, sep="_"))) %>%
+0:ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
+0:geom_bar(stat = "identity") +
+0:ylab("Method+annotation") +
+0:xlab("Rank") +
+0:ggtitle("Rank of set of receptors that TNF binds to") +
+0:theme_bw()
+0:p <- df %>%
+0:mutate(ann = rownames(.)) %>%
+0:gather(method, rank, -ann) %>%
+0:mutate(method_ann = factor(paste(method, ann, sep="_"))) %>%
+0:ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
+0:geom_bar(stat = "identity") +
+0:ylab("Method+annotation") +
+0:xlab("Rank") +
+0:ggtitle("Rank of set of receptors that TNF binds to") +
+0:theme_bw()
+0:library(pheatmap)
+0:pheatmap(df)
+0:p <- df %>%
+0:mutate(ann = rownames(.)) %>%
+0:gather(method, rank, -ann) %>%
+0:mutate(method_ann = factor(paste(method, ann, sep="_"))) %>%
+0:ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
+0:geom_bar(stat = "identity") +
+0:ylab("Method+annotation") +
+0:xlab("Rank") +
+0:ggtitle("Rank of set of receptors that TNF binds to") +
+0:theme_bw()
+0:pheatmap(df)
+0:plot(p)
+0:pheatmap(df)
+0:plot(p)
+0:result
+0:results %>% View()
+0:result %>% View()
+0:ranks
+0:getdir()
+0:getwd()
+0:getwd()
+0:setwd(..)
+0:setwd("..")
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE92415"
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[paste0(geo_data, "series_matrix.txt.gz")]]
+0:save(result, paste0("../results/",geo_data,".rds"))
+0:paste0("../results/",geo_data,".rds")
+0:saveRDS(result, paste0("../results/",geo_data,".rds"))
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE215039"
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1
+0:e1 <- geo[[paste0(geo_data, "series_matrix.txt.gz")]]
+0:phenoData <- pData(e1)
+0:e1
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE215039"
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[paste0(geo_data, "series_matrix.txt.gz")]]
+0:e1
+0:e1 <- geo[["GSE215039_series_matrix.txt.gz")]]
+0:GEO
+0:geo
+0:e1 <- geo[["GSE215039_series_matrix.txt.gz")]]
+0:e1 <- geo[["GSE215039_series_matrix.txt.gz"]]
+0:e1
+0:phenoData <- pData(e1)
+0:phenoData
+0:ann <- e1@featureData@data
+0:ann <- ann[ann$`Gene Symbol` != "", ]
+0:exp <- exprs(e1)
+0:dim(phenoData); dim(ann); dim(exp);
+0:all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
+0:phenoData$`treatment:ch1` %>% unique
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:series_matrix
+0:e1 <- geo[["series_matrix"]]
+0:e1
+0:e1 <- geo[[series_matrix]]
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE226244"
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[series_matrix]]
+0:e1
+0:phenoData <- pData(e1)
+0:phenoData$`treatment:ch1`
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE220652"
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[series_matrix]]
+0:phenoData <- pData(e1)
+0:phenoData$`treatment:ch1`
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE139940"
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[series_matrix]]
+0:phenoData <- pData(e1)
+0:phenoData$`treatment:ch1`
+0:ann <- e1@featureData@data
+0:ann <- ann[ann$`Gene Symbol` != "", ]
+0:exp <- exprs(e1)
+0:dim(phenoData); dim(ann); dim(exp);
+0:all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
+0:Tofacitinib <- subset(phenoData, `treatment:ch1` == "Tofacitinib")
+0:eset <- exp[rownames(ann), rownames(Tofacitinib)]
+0:all(rownames(eset) == rownames(ann))
+0:gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
+0:id_gensym <- data.frame(gensym = unlist(gensym),
+0:probeids = rep(rownames(ann), sapply(gensym, length)))
+0:Tofacitinib
+0:exp
+0:e1 <- geo[[series_matrix]]
+0:e1$`treatment:ch1`
+0:ann
+0:e1@featureData
+0:e1@featureData@data
+0:geo
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE16879"
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[series_matrix]]
+0:phenoData <- pData(e1)
+0:phenoData$`disease:ch1`
+0:phenoData$`before or after first infliximab treatment:ch1`
+0:phenoData$`before or after first infliximab treatment:ch1` %>% table()
+0:table(phenoData$`before or after first infliximab treatment:ch1`, phenoData$`disease:ch1`)
+0:# retrieve GEO data set and clean data
+0:geo_data <- "GSE220972"
+0:series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+0:geo <- getGEO(geo_data, GSEMatrix=TRUE)
+0:e1 <- geo[[series_matrix]]
+0:phenoData <- pData(e1)
+0:phenoData$`treatment:ch1`

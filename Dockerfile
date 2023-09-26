@@ -1,4 +1,4 @@
-FROM rocker/rstudio:4.1
+FROM rocker/rstudio:latest
 
 COPY . .
 

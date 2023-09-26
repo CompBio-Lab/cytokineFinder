@@ -9,6 +9,6 @@ eda <- c("mixOmics")
 limma <- c("limma")
 fgsea <- c("fgsea")
 bioconductor_packages <- c(data, gsva, eda, limma, fgsea)
-BiocManager::install(bioconductor_packages, version = "3.14")
+BiocManager::install(bioconductor_packages, version = "3.17")
 
 install.packages("parallel")
