@@ -20,7 +20,7 @@ cfgsea <- function(eset, y, obs_id, db){
 }
 
 cfgsea_p = function(eset, y, obs_id, dbs, cores){
-  cl <- parallel::makeCluster(mc <- getOption("cl.cores", 2), type = "SOCK")
+  cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
   parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cfgsea"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
