@@ -44,7 +44,7 @@ cfgsea_p = function(eset, y, obs_id, dbs, cores){
 # GSVA
 cgsva = function(eset, y, obs_id, db){
   gsva_eset <- GSVA::gsva(eset, db, verbose=FALSE)
-  design <- model.matrix(~y+obs_id)
+  design <- create_design(y, obs_id)
   fit <- limma::eBayes(limma::lmFit(gsva_eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
   pval <- top$P.Value
@@ -69,7 +69,7 @@ cpca = function(eset, y, obs_id, db){
     genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
     prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
   }))
-  design <- model.matrix(~y+obs_id)
+  design <- create_design(y, obs_id)
   fit <- limma::eBayes(limma::lmFit(pc, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
   pval <- top$P.Value
