@@ -19,7 +19,8 @@ exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
 
-infliximab <- subset(phenoData, `before or after first infliximab treatment:ch1` != "Not applicable")
+# subset for only Crohn's disease
+infliximab <- subset(phenoData, `before or after first infliximab treatment:ch1` != "Not applicable" & `disease:ch1` == "CD")
 eset <- exp[rownames(ann), rownames(infliximab)]
 all(rownames(eset) == rownames(ann))
 
@@ -36,7 +37,7 @@ X = eset[id_gensym$probeids, ] %>%
 eset <- as.matrix(X[,-1])
 rownames(eset) <- X$genesym
 y = infliximab$`before or after first infliximab treatment:ch1`
-obs_id = golimumab$`subject:ch1`
+obs_id = infliximab %>% mutate(title = gsub("_[a-z]*T", "", title)) %>% select(title)
 
 ## rm genes from db if not in eset
 dbs <- lapply(dbs_all, function(db){
@@ -62,6 +63,7 @@ run_all = function(eset, y, obs_id, dbs, cores, funs){
 
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
 
+result <- cfgsea_p(eset, y, obs_id, dbs, cores)
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })

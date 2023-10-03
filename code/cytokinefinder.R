@@ -8,7 +8,7 @@ dbs_all = list(baderlab=baderlab, nichenet=nichenet,
 source(here::here("code/funcs.R"))
 
 # retrieve GEO data set and clean data
-geo_data <- "GSE16879"
+geo_data <- "GSE92415"
 series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
 geo <- getGEO(geo_data, GSEMatrix=TRUE)
 e1 <- geo[[series_matrix]]
