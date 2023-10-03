@@ -5,12 +5,14 @@ load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
                fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
 
-source(here::here("code/funcs.R"))
+source("~/code/funcs.R")
 
 # retrieve GEO data set and clean data
-geo_data <- "GSE92415"
-series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
-geo <- getGEO(geo_data, GSEMatrix=TRUE)
+# geo_data <- "GSE92415"
+# series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+# geo <- getGEO(geo_data, GSEMatrix=TRUE)
+geo <- readRDS("/arc/project/st-singha53-1/singha53/cytokineFinder/code/gse/gse92415.rds") ## sockeye
+
 e1 <- geo[[series_matrix]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
