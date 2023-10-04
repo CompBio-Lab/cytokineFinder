@@ -32,7 +32,7 @@ cfgsea <- function(eset, y, obs_id, db){
 
 cfgsea_p = function(eset, y, obs_id, dbs, cores){
   cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
-  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cfgsea"), 
+  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cfgsea", "create_design"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
     cfgsea(eset, y, obs_id, db)
@@ -54,7 +54,7 @@ cgsva = function(eset, y, obs_id, db){
 
 cgsva_p = function(eset, y, obs_id, dbs, cores){
   cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
-  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cgsva"), 
+  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cgsva", "create_design"), 
                           envir = environment())
   result = parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
     cgsva(eset, y, obs_id, db)
@@ -79,7 +79,7 @@ cpca = function(eset, y, obs_id, db){
 
 cpca_p = function(eset, y, obs_id, dbs, cores){
   cl <- parallel::makeCluster(mc <- getOption("cl.cores", cores), type = "SOCK")
-  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cpca"), 
+  parallel::clusterExport(cl, varlist = c("eset", "y", "obs_id", "cpca", "create_design"), 
                           envir = environment())
   result <- parallel::parLapply(cl, dbs, function(db, eset, y, obs_id) {
     cpca(eset, y, obs_id, db)

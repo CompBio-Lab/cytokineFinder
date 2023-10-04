@@ -5,14 +5,12 @@ load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
                fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
 
-source("code/funcs.R")
+source(here::here("code/funcs.R"))
 
 # retrieve GEO data set and clean data
-# geo_data <- "GSE92415"
-# series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
-# geo <- getGEO(geo_data, GSEMatrix=TRUE)
-geo <- readRDS("/arc/project/st-singha53-1/singha53/cytokineFinder/code/gse/gse92415.rds") ## sockeye
-
+geo_data <- "GSE16879"
+series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+geo <- getGEO(geo_data, GSEMatrix=TRUE)
 e1 <- geo[[series_matrix]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
@@ -21,8 +19,9 @@ exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
 
-golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
-eset <- exp[rownames(ann), rownames(golimumab)]
+# subset for only Crohn's disease
+infliximab <- subset(phenoData, `before or after first infliximab treatment:ch1` != "Not applicable" & `disease:ch1` == "CD")
+eset <- exp[rownames(ann), rownames(infliximab)]
 all(rownames(eset) == rownames(ann))
 
 gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
@@ -37,8 +36,8 @@ X = eset[id_gensym$probeids, ] %>%
 
 eset <- as.matrix(X[,-1])
 rownames(eset) <- X$genesym
-y = golimumab$`visit:ch1`
-obs_id = golimumab$`subject:ch1`
+y = infliximab$`before or after first infliximab treatment:ch1`
+obs_id = infliximab %>% mutate(title = gsub("_[a-z]*T", "", title)) %>% select(title)
 
 ## rm genes from db if not in eset
 dbs <- lapply(dbs_all, function(db){
@@ -64,6 +63,7 @@ run_all = function(eset, y, obs_id, dbs, cores, funs){
 
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
 
+result <- cfgsea_p(eset, y, obs_id, dbs, cores)
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
