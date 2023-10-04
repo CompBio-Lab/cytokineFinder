@@ -3,14 +3,18 @@ require("devtools")
 
 install.packages("BiocManager", repos = "http://cran.us.r-project.org")
 
-data <- c("GEOquery")
-gsva <- c("GSVA")
-eda <- c("mixOmics")
-limma <- c("limma")
-fgsea <- c("fgsea")
-bioconductor_packages <- c(data, gsva, eda, limma, fgsea)
-BiocManager::install(bioconductor_packages, version = "3.17")
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("GSVA")
 
-install.packages("parallel")
-install.packages("here")
-install.packages("tidyverse")
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("mixOmics")
+
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("fgsea")
+
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("limma")
