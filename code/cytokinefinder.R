@@ -1,6 +1,5 @@
 library(tidyverse)
 
-library(GEOquery)
 load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
                fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
@@ -8,10 +7,10 @@ dbs_all = list(baderlab=baderlab, nichenet=nichenet,
 source("code/funcs.R")
 
 # retrieve GEO data set and clean data
-# geo_data <- "GSE92415"
-# series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
+geo_data <- "GSE92415"
+series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
 # geo <- getGEO(geo_data, GSEMatrix=TRUE)
-geo <- readRDS("/arc/project/st-singha53-1/singha53/cytokineFinder/code/gse/gse92415.rds") ## sockeye
+geo <- readRDS("code/gse/gse92415.rds") ## sockeye
 
 e1 <- geo[[series_matrix]]
 phenoData <- pData(e1)
@@ -64,7 +63,7 @@ run_all = function(eset, y, obs_id, dbs, cores, funs){
 
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
 
-ranks <- lapply(result, function(i){
+xranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
 
