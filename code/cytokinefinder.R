@@ -1,4 +1,5 @@
 library(tidyverse)
+library(GEOquery)
 
 load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
