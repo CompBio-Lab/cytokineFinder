@@ -53,7 +53,7 @@ mv cytokinefinder sif/
 ```bash
 cd sif
 module load apptainer
-apptainer shell modc
+apptainer shell cytokinefinder
 R
 setwd("/arc/project/st-singha53-1/jt1013/cytokineFinder/gse/")
 source("gse71669.R")
