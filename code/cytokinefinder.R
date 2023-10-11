@@ -1,5 +1,4 @@
 library(tidyverse)
-library(GEOquery)
 
 load(here::here("data/ligand_receptor_db.RData"))
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
@@ -8,10 +7,10 @@ dbs_all = list(baderlab=baderlab, nichenet=nichenet,
 source("code/funcs.R")
 
 # retrieve GEO data set and clean data
-geo_data <- "GSE92415"
+geo_data <- "GSE37025"
 series_matrix <- paste0(geo_data,"_series_matrix.txt.gz")
-# geo <- getGEO(geo_data, GSEMatrix=TRUE)
-geo <- readRDS("code/gse/gse92415.rds") ## sockeye
+geo <- getGEO(geo_data, GSEMatrix=TRUE)
+# geo <- readRDS("code/gse/gse92415.rds") ## sockeye
 
 e1 <- geo[[series_matrix]]
 phenoData <- pData(e1)
@@ -21,8 +20,9 @@ exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
 
-golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
-eset <- exp[rownames(ann), rownames(golimumab)]
+treatment <- subset(phenoData, `ifn-type:ch1` == "Plegridy")
+treatment <- subset(treatment, `ms-state:ch1` == "stable")
+eset <- exp[rownames(ann), rownames(treatment)]
 all(rownames(eset) == rownames(ann))
 
 gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
@@ -64,7 +64,7 @@ run_all = function(eset, y, obs_id, dbs, cores, funs){
 
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
 
-xranks <- lapply(result, function(i){
+ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
 

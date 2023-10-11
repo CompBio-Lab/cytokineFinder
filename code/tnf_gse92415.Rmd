@@ -81,25 +81,32 @@ run_all = function(eset, y, obs_id, dbs, cores, funs){
 }
 
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
+saveRDS(result, paste0("../results/",geo_data,".rds"))
+```
 
+# Load RDS data
+## Once RDS is saved of the analysis, can just load this from the RDS file
+```{r}
+result <- readRDS("../results/GSE92415.rds")
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
 
 ```
 
+
 # visualizations
 
 ## ranks
 
 ```{r}
-do.call(rbind, ranks) %>% 
+plot <- do.call(rbind, ranks) %>% 
   as.data.frame() %>% 
   mutate(method = gsub("_p", "", rownames(.))) %>% 
   gather(database, rank, -method) %>% 
   mutate(method_db = paste(method, database, sep="_")) %>% 
   ggplot(aes(x = rank, y = reorder(method_db, rank), fill = database)) +
-  geom_bar(stat = "identity", position = "dodge")
+  geom_bar(stat = "identity", position = "dodge") + ylab("Method + Database Annotation")
 
 ```
 
@@ -109,8 +116,13 @@ do.call(rbind, ranks) %>%
 ```{r}
 df <- as.data.frame(do.call(rbind, ranks))
 library(pheatmap)
-pheatmap(df)
+h <- pheatmap(df)
+
+h_gg <- ggplotify::as.ggplot(h)
 ```
+
+# barplot
+
 ```{r}
 p <- df %>% 
   mutate(ann = rownames(.)) %>% 
@@ -123,11 +135,14 @@ p <- df %>%
   ggtitle("Rank of set of receptors that TNF binds to") +
   theme_bw()
 
-plot(p)
+plot <- p + 
+  labs(fill = "Methods") + 
+  scale_fill_brewer(labels = c("Bader", "GSVA", "GSVAR", "CPCA", "CPC"), palette = "Set3")
 
+plot
 ```
 
 ```{r}
-saveRDS(result, paste0("../results/",geo_data,".rds"))
+library(ggpubr)
+ggpubr::ggarrange(h_gg, plot, ncol = 2)
 ```
-
