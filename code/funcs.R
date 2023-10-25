@@ -132,3 +132,7 @@ cgsvar_p = function(eset, y, obs_id, dbs, cores){
   parallel::stopCluster(cl)
   return(result)
 }
+
+run_all = function(eset, y, obs_id, dbs, cores, funs){
+  lapply(funs, function(fun) fun(eset, y, obs_id, dbs, cores))
+}

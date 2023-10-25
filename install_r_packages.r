@@ -1,8 +1,12 @@
+# CRAN
 install.packages("tidyverse")
 install.packages("here")
+install.packages("ggplotify")
+install.packages("ggpubr")
+install.packages("pheatmap")
 
+# Bioconductor
 install.packages("BiocManager", repos = "http://cran.us.r-project.org")
-
 data <- c("GEOquery")
 gsva <- c("GSVA")
 eda <- c("mixOmics")

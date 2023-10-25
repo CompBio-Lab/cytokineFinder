@@ -9,9 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-
 library(GEOquery)
-load(here::here("data/ligand_receptor_db.RData"))
+library(data.table)
+library(ggplotify)
+
+load(here::here("data/ligand_receptor_db.RData")) ## run code/ligand_receptor_dbs.Rmd first
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
           fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
 
@@ -25,34 +27,36 @@ source(here::here("code/funcs.R"))
 # retrieve GEO data set and clean data
 geo_data <- "GSE92415"
 geo <- getGEO(geo_data, GSEMatrix=TRUE)
-e1 <- geo[[paste0(geo_data, "series_matrix.txt.gz")]]
+e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
 ann <- ann[ann$`Gene Symbol` != "", ]
 exp <- exprs(e1)
 dim(phenoData); dim(ann); dim(exp);
-all(rownames(ann) == rownames(exp)); all(rownames(phenoData) == colnames(exp))
+all(rownames(phenoData) == colnames(exp))
 
 golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
 eset <- exp[rownames(ann), rownames(golimumab)]
 all(rownames(eset) == rownames(ann))
 
 gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
-id_gensym <- data.frame(gensym = unlist(gensym),
-           probeids = rep(rownames(ann), sapply(gensym, length)))
+id_gensym <- data.table(gensym = unlist(gensym),
+           probeids = rep(rownames(ann), sapply(gensym, length))) %>% 
+  filter(gensym %in% unique(unlist(dbs_all)))
 
 X = eset[id_gensym$probeids, ] %>% 
   as.data.frame() %>% 
   mutate(genesym = id_gensym$gensym) %>% 
   group_by(genesym) %>% 
-  summarise(across(everything(), mean, na.rm=TRUE))
+  summarise(across(everything(), ~ mean(.x, na.rm=TRUE)))
 
 eset <- as.matrix(X[,-1])
 rownames(eset) <- X$genesym
 y = golimumab$`visit:ch1`
+names(y) <- rownames(golimumab)
 obs_id = golimumab$`subject:ch1`
 
-## rm genes from db if not in eset
+# rm genes from db if not in eset
 dbs <- lapply(dbs_all, function(db){
   db <- db[names(db) %in% rownames(eset)]
   db <- lapply(db, function(i){
@@ -76,73 +80,28 @@ funs <- list(cfgsea_p = cfgsea_p,
              cpcr_p = cpcr_p,
              cgsvar_p = cgsvar_p)
 
-run_all = function(eset, y, obs_id, dbs, cores, funs){
-  lapply(funs, function(fun) fun(eset, y, obs_id, dbs, cores))
-}
-
 result <- run_all(eset, y, obs_id, dbs, cores, funs)
-saveRDS(result, paste0("../results/",geo_data,".rds"))
-```
-
-# Load RDS data
-## Once RDS is saved of the analysis, can just load this from the RDS file
-```{r}
-result <- readRDS("../results/GSE92415.rds")
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
-
 ```
 
-
-# visualizations
-
-## ranks
+# save data
 
 ```{r}
-plot <- do.call(rbind, ranks) %>% 
+do.call(rbind, ranks) %>% 
   as.data.frame() %>% 
   mutate(method = gsub("_p", "", rownames(.))) %>% 
   gather(database, rank, -method) %>% 
-  mutate(method_db = paste(method, database, sep="_")) %>% 
-  ggplot(aes(x = rank, y = reorder(method_db, rank), fill = database)) +
-  geom_bar(stat = "identity", position = "dodge") + ylab("Method + Database Annotation")
-
+  mutate(method_db = paste(method, database, sep="_"),
+         gse = "GSE92415",
+         cytokine = "TNF",
+         disease = "ulcerative colitis",
+         sample_size = ncol(eset),
+         type = "anti-cytokine treatment",
+         sample_type = "mucosal_biopsy",
+         platform_type = "microarray",
+         platform = "Affymetrix HT HG-U133+") %>% 
+  saveRDS(paste0("../results/",geo_data,".rds"))
 ```
 
-
-## heatmap
-
-```{r}
-df <- as.data.frame(do.call(rbind, ranks))
-library(pheatmap)
-h <- pheatmap(df)
-
-h_gg <- ggplotify::as.ggplot(h)
-```
-
-# barplot
-
-```{r}
-p <- df %>% 
-  mutate(ann = rownames(.)) %>% 
-  gather(method, rank, -ann) %>% 
-  mutate(method_ann = factor(paste(method, ann, sep="_"))) %>% 
-  ggplot(aes(y = reorder(method_ann, rank), x = rank, fill=ann)) +
-  geom_bar(stat = "identity") +
-  ylab("Method+annotation") +
-  xlab("Rank") +
-  ggtitle("Rank of set of receptors that TNF binds to") +
-  theme_bw()
-
-plot <- p + 
-  labs(fill = "Methods") + 
-  scale_fill_brewer(labels = c("Bader", "GSVA", "GSVAR", "CPCA", "CPC"), palette = "Set3")
-
-plot
-```
-
-```{r}
-library(ggpubr)
-ggpubr::ggarrange(h_gg, plot, ncol = 2)
-```
