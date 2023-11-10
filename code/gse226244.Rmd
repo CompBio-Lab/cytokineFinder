@@ -1,0 +1,137 @@
+---
+title: "GSE226244"
+author: "Jeffrey Tang"
+date: "2023-10-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(GEOquery)
+library(data.table)
+library(ggplotify)
+library(here)
+
+load(here::here("data/ligand_receptor_db.RData")) ## run code/ligand_receptor_dbs.Rmd first
+dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
+          fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
+
+source(here::here("code/funcs.R"))
+
+```
+
+
+```{r}
+# retrieve GEO data set and clean data
+geo_data <- "GSE226244"
+#geo <- getGEO(geo_data, GSEMatrix=TRUE)
+geo <- readRDS(here::here("code/gse/gse226244.rds"))
+e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
+phenoData <- pData(e1)
+ann <- e1@featureData@data
+#ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
+#exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
+dim(phenoData); dim(ann); dim(exp);
+all(rownames(phenoData) == colnames(exp))
+
+table(phenoData$`disease state:ch1`, phenoData$characteristics_ch1.1)
+
+golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
+eset <- exp[rownames(ann), rownames(golimumab)]
+all(rownames(eset) == rownames(ann))
+
+gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
+id_gensym <- data.table(gensym = unlist(gensym),
+           probeids = rep(rownames(ann), sapply(gensym, length))) %>% 
+  filter(gensym %in% unique(unlist(dbs_all)))
+
+X = eset[id_gensym$probeids, ] %>% 
+  as.data.frame() %>% 
+  mutate(genesym = id_gensym$gensym) %>% 
+  group_by(genesym) %>% 
+  summarise(across(everything(), ~ mean(.x, na.rm=TRUE)))
+
+eset <- as.matrix(X[,-1])
+rownames(eset) <- X$genesym
+y = golimumab$`visit:ch1`
+names(y) <- rownames(golimumab)
+obs_id = golimumab$`subject:ch1`
+
+# rm genes from db if not in eset
+dbs <- lapply(dbs_all, function(db){
+  db <- db[names(db) %in% rownames(eset)]
+  db <- lapply(db, function(i){
+    intersect(i, rownames(eset))
+  })
+  db[sapply(db, length) > 0]
+})
+
+```
+
+## Run enrichment and save results
+
+```{r}
+run_all = function(eset, y, obs_id, dbs, cores, funs){
+  lapply(funs, function(fun) fun(eset, y, obs_id, dbs, cores))
+}
+
+rank_list <- list()
+trt <- c("IL6", "TNF", "IL1B")
+names(trt) <- c("IL-6", "TNF", "IL-1b")
+for(disease in unique(phenoData$`disease:ch1`)){
+  for(treatment in names(trt)){
+    cat(paste(disease, treatment, sep="_"), fill = TRUE)
+    phenoData_subset <- subset(phenoData, `disease:ch1` == disease & 
+                                 `treatment:ch1` %in% c("No treatment", treatment))
+    eset_subset <- eset[, rownames(phenoData_subset)]
+    y <- phenoData_subset$`treatment:ch1`
+    obs_id = NULL
+    
+    ## remove variables with zero variance
+    eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
+    
+    # rm genes from db if not in eset_subset
+    dbs <- lapply(dbs_all, function(db){
+      db <- db[names(db) %in% rownames(eset_subset)]
+      db <- lapply(db, function(i){
+        intersect(i, rownames(eset_subset))
+      })
+      db[sapply(db, length) > 0]
+    })
+    
+    # Fast GSEA, run GSEA for all datasets and rank
+    cores <- 4
+    funs <- list(cfgsea_p = cfgsea_p,
+                 cgsva_p = cgsva_p,
+                 cpca_p = cpca_p,
+                 cpcr_p = cpcr_p,
+                 cgsvar_p = cgsvar_p) 
+    result <- run_all(eset_subset, y, obs_id, dbs, cores, funs)
+    ranks <- lapply(result, function(db){
+              100 - 100*round(sapply(db, function(ligand){ 
+                    k = which(names(ligand) == trt[treatment])
+                    ifelse(length(k) == 0, NA, k)
+                })/sapply(db, length), 2)})  
+    
+    rank_list[[paste(disease, trt[treatment], sep="_")]] <- do.call(rbind, ranks) %>% 
+                              as.data.frame() %>% 
+                              mutate(method = gsub("_p", "", rownames(.))) %>% 
+                              gather(database, rank, -method) %>% 
+                              mutate(method_db = paste(method, database, sep="_"),
+                                     gse = "GSE215039",
+                                     cytokine = treatment,
+                                     disease = disease,
+                                     sample_size = ncol(eset_subset),
+                                     type = "cytokine stimulation",
+                                     sample_type = "primary human chondrocytes",
+                                     platform_type = "sequencing",
+                                     platform = "Illumina NovaSeq 6000")
+  }
+}
+
+saveRDS(do.call(rbind, rank_list), here::here("results",paste0(geo_data,".rds")))
+
+```
+
