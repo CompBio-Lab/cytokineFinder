@@ -1,7 +1,7 @@
 ---
-title: "GSE226244"
+title: "GSE220652"
 author: "Jeffrey Tang"
-date: "2023-10-27"
+date: "2023-11-14"
 output: html_document
 ---
 
@@ -31,14 +31,16 @@ geo <- readRDS(here::here("code/gse/gse226244.rds"))
 e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
+ann <- ann[ann$`Gene Symbol` != "", ]
+exp <- exprs(e1)
 #ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
 #exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
+
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(phenoData) == colnames(exp))
 
 table(phenoData$`disease state:ch1`, phenoData$characteristics_ch1.1)
 
-golimumab <- subset(phenoData, `treatment:ch1` == "golimumab")
 eset <- exp[rownames(ann), rownames(golimumab)]
 all(rownames(eset) == rownames(ann))
 

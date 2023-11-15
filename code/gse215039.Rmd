@@ -53,8 +53,7 @@ dim(phenoData); dim(ann); dim(exp);
 all(rownames(phenoData) == colnames(exp))
 
 table(phenoData$`disease:ch1`, phenoData$`treatment:ch1`)
-
-gensym <- sapply(strsplit(ann$Symbol, "///"), trimws)
+gensym <- sapply(strsplit(ann$`Symbol`, "///"), trimws)
 id_gensym <- data.table(gensym = unlist(gensym),
            probeids = rep(rownames(ann), sapply(gensym, length))) %>% 
   filter(gensym %in% unique(unlist(dbs_all)))
