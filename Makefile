@@ -12,5 +12,5 @@ push:
 	docker push $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
 
 sockeye_pull:
-	module load singularity; \
-	singularity pull --name cytokinefinder docker://$(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
+	module load apptainer; \
+	apptainer pull --name cytokinefinder docker://$(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
