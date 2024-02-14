@@ -1,0 +1,14 @@
+---
+title: "cytosig_gse162510"
+author: "Jeffrey Tang"
+date: "2024-02-13"
+output: html_document
+---
+# This is an RMarkdown with the data set from Defois et al, 2021 (related to GSE215039)
+
+```{r}
+geo_data <- "GSE162510"
+geo <- getGEO(geo_data, GSEMatrix=TRUE)
+e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
+phenoData <- pData(e1)
+```

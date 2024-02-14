@@ -1,0 +1,173 @@
+---
+title: "cytosig_test_gse215039"
+author: "Jeffrey Tang"
+date: "2024-02-13"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(GEOquery)
+library(data.table)
+library(ggplotify)
+library(here)
+```
+
+
+```{r}
+# retrieve GEO data set and clean data
+geo_data <- "GSE215039"
+geo <- getGEO(geo_data, GSEMatrix=TRUE)
+e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
+phenoData <- pData(e1)
+ann <- e1@featureData@data
+ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
+exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
+dim(phenoData); dim(ann); dim(exp);
+all(rownames(phenoData) == colnames(exp))
+
+table(phenoData$`disease:ch1`, phenoData$`treatment:ch1`)
+gensym <- sapply(strsplit(ann$`Symbol`, "///"), trimws)
+id_gensym <- data.table(gensym = unlist(gensym),
+           probeids = rep(rownames(ann), sapply(gensym, length))) #%>% 
+  #filter(gensym %in% unique(unlist(dbs_all)))
+
+X = exp[id_gensym$probeids, ] %>% 
+  as.data.frame() %>% 
+  mutate(genesym = id_gensym$gensym) %>% 
+  group_by(genesym) %>% 
+  summarise(across(everything(), ~ mean(.x, na.rm=TRUE)))
+
+## log2 transform data
+eset <- as.matrix(X[,-1])
+eset[eset < 1] <- 1
+eset <- log2(eset)
+rownames(eset) <- X$genesym
+```
+
+```{r}
+trt <- c("IL6", "TNF", "IL1B")
+names(trt) <- c("IL-6", "TNF", "IL-1b")
+
+# create a list of top tables for differential gene expression across treatment groups
+top_tables_list <- list()
+for(disease in unique(phenoData$`disease:ch1`)){
+  for(treatment in names(trt)){
+    cat(paste(disease, treatment, sep="_"), fill = TRUE)
+    phenoData_subset <- subset(phenoData, `disease:ch1` == disease & 
+                                 `treatment:ch1` %in% c("No treatment", treatment))
+    eset_subset <- eset[, rownames(phenoData_subset)]
+    y <- phenoData_subset$`treatment:ch1`
+    obs_id = NULL
+    
+    ## remove variables with zero variance
+    eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
+    
+    # create design matrix
+    design <- model.matrix(~y)
+    fit <- limma::eBayes(limma::lmFit(eset_subset, design))
+    top <- limma::topTable(fit, coef = 2, n = nrow(fit))
+    top$comparison <- paste(disease, treatment, sep="_")
+    
+      
+    top_tables_list[[paste(disease, treatment, sep = "_")]] <- top
+  }
+}
+
+```
+```{r}
+# Create an empty list to store selected data frames
+selected_tables_list <- list()
+
+# Process each top table dataframe
+for (key in names(top_tables_list)) {
+  cat(key, fill = TRUE)
+  
+  # Extract disease and treatment information from the key
+  disease <- strsplit(key, "_")[[1]][1]
+  treatment <- strsplit(key, "_")[[1]][2]
+  
+  # Select relevant columns (logFC) and retain row names
+  selected_table <- top_tables_list[[key]] %>%
+    select(logFC) %>%
+    rownames_to_column("Gene") %>%
+    rename_with(~paste(disease, treatment, .), logFC)
+  
+  # Add the selected dataframe to the list
+  selected_tables_list[[key]] <- selected_table
+}
+
+# Combine selected dataframes into a single dataframe
+final_result <- selected_tables_list %>%
+  reduce(function(x, y) merge(x, y, by = "Gene", all = TRUE)) %>%
+  rename_all(~gsub(" ", "_", .))
+
+final_result[is.null(final_result)] <- NaN
+
+to_csv <- final_result %>%
+  column_to_rownames(var = "Gene")
+write_csv(to_csv, "gse215039_merged_withNA.csv")
+
+remove_na <- final_result %>%
+  drop_na()
+
+write_csv(remove_na, "gse215039_merged.csv")
+```
+
+```{r}
+# get_top_genes <- function(df, n = 100) {
+#   top_genes <- head(rownames(df[order(-df[, 1]), , drop = FALSE]), n)
+#   return(top_genes)
+# }
+# 
+# top_genes_list <- lapply(top_tables_list, get_top_genes, n = 100)
+# 
+# expression_subsets <- list()
+# for(trt_group in names(top_genes_list)) {
+#   selected_genes <- top_genes_list[[trt_group]]
+#   expression_subsets[[trt_group]] <- eset[selected_genes, , drop = FALSE]
+# }
+```
+
+```{r}
+# for (treatment_group in names(expression_subsets)) {
+#   file_name <- paste(treatment_group, "_expression_subset.csv", sep = "")
+#   write.csv(expression_subsets[[treatment_group]], file = file_name, row.names = TRUE)
+# }
+```
+
+```{r}
+# Get the top table of all treatments and subset by top 100 genes
+#   Data plots for selected GEO samples
+
+# load counts table from GEO
+# urld <- "https://www.ncbi.nlm.nih.gov/geo/download/?format=file&type=rnaseq_counts"
+# path <- paste(urld, "acc=GSE215039", "file=GSE215039_raw_counts_GRCh38.p13_NCBI.tsv.gz", sep="&");
+# tbl <- as.matrix(data.table::fread(path, header=T, colClasses="integer"), rownames=1)
+
+# pre-filter low count genes
+# keep genes with at least 2 counts > 10
+# keep <- rowSums( tbl >= 10 ) >= 2
+# tbl <- tbl[keep, ]
+
+# log transform raw counts
+# instead of raw counts can display vst(as.matrix(tbl)) i.e. variance stabilized counts
+# dat <- log2(tbl + 1)
+
+# box-and-whisker plot
+# dev.new(width=3+ncol(tbl)/6, height=5)
+# par(mar=c(7,4,2,1))
+# boxplot(dat, boxwex=0.7, notch=T, main="GSE215039", ylab="lg(cnt + 1)", outline=F, las=2)
+#dev.off()
+```
+
+```{r}
+# UMAP plot (dimensionality reduction)
+# library(umap)
+# dat <- dat[!duplicated(dat), ] # first remove duplicates
+# ump <- umap(t(dat), n_neighbors = 15, random_state = 123)
+
+# plot(ump$layout, main="GSE215039 UMAP plot, nbrs =15", xlab="", ylab="", pch=20, cex=1.5)
+```
+
