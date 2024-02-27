@@ -76,6 +76,7 @@ for(disease in unique(phenoData$`disease:ch1`)){
 }
 
 ```
+
 ```{r}
 # Create an empty list to store selected data frames
 selected_tables_list <- list()
@@ -169,5 +170,85 @@ write_csv(remove_na, "gse215039_merged.csv")
 # ump <- umap(t(dat), n_neighbors = 15, random_state = 123)
 
 # plot(ump$layout, main="GSE215039 UMAP plot, nbrs =15", xlab="", ylab="", pch=20, cex=1.5)
+```
+
+
+```{r}
+# convert to rank
+gse215039 <- readRDS(here::here("results/GSE215039.rds"))
+
+cytosig_results <- read_csv(here::here("cytosig/results/cytosig_z_scores.csv")) 
+
+# Rank the enriched signals
+cytosig_results_long <- cytosig_results %>% 
+  pivot_longer(!ID, names_to = "enriched_signals", values_to = "z_scores") %>%
+  mutate(ranks = 100*(rank(abs(z_scores))/n())) %>%
+  group_by(ID) %>%
+  arrange(ranks)
+
+cytosig_results_long %>%
+  filter(enriched_signals %in% c("TNF", "IL1B","IL6")) %>% View()
+```
+
+```{r}
+gse215039 %>% 
+  group_by(method_db, cytokine, disease) %>% 
+  summarise(mean = mean(rank, na.rm=TRUE), sd = sd(rank, na.rm = TRUE),
+            db = unique(database)) %>%  
+  ggplot(aes(x = reorder(method_db, mean), y = mean, fill = db)) +
+  geom_bar(stat = "identity", position = "dodge") + 
+  geom_errorbar(aes(ymin=mean-1, ymax=mean+sd), width=.2,
+             position=position_dodge(.9)) +
+  ylab("Mean Rank By Study/Cytokine") +
+  xlab("Method + Database Annotation") +
+  facet_grid(disease~cytokine) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme(axis.text=element_text(size=10), legend.text = element_text(size=8)) +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_classic() +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+#troubleshoot non-OA TNF treatment
+tnf_subset <- subset(phenoData, `disease:ch1` == "non-OA" & 
+                                `treatment:ch1` %in% c("No treatment", "TNF"))
+eset_subset <- eset[, rownames(tnf_subset)]
+y <- tnf_subset$`treatment:ch1`
+obs_id = NULL
+    
+## remove variables with zero variance
+eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
+    
+# create design matrix
+#design <- model.matrix(~y)
+#fit <- limma::eBayes(limma::lmFit(eset_subset, design))
+#top <- limma::topTable(fit, coef = 2, n = nrow(fit))
+
+## remove variables with zero variance
+#eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
+    
+# rm genes from db if not in eset_subset
+dbs <- lapply(dbs_all, function(db){
+  db <- db[names(db) %in% rownames(eset_subset)]
+  db <- lapply(db, function(i){
+    intersect(i, rownames(eset_subset))
+    })
+  db[sapply(db, length) > 0]
+  })
+    
+# Fast GSEA, run GSEA for all datasets and rank
+cores <- 1
+funs <- list(cfgsea_p = cfgsea_p,
+             cgsva_p = cgsva_p,
+             cpca_p = cpca_p,
+             cpcr_p = cpcr_p,
+             cgsvar_p = cgsvar_p) 
+result <- run_all(eset_subset, y, obs_id, dbs, cores, funs)
+ranks <- lapply(result, function(db){
+  100 - 100*round(sapply(db, function(ligand){ 
+    k = which(names(ligand) == trt[treatment])
+    ifelse(length(k) == 0, NA, k)
+    })/sapply(db, length), 2)})  
 ```
 
