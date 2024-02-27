@@ -35,18 +35,14 @@ geo <- getGEO(geo_data, GSEMatrix=TRUE)
 e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
 phenoData <- pData(e1)
 
-phenoData <- read.csv(here("data/GSE215039/GSE215039_series_matrix.txt"))
+# phenoData <- read.csv(here("data/GSE215039/GSE215039_series_matrix.txt"))
 ```
 
 
 
 ```{r}
+# cannot find annotation data through geoQuery so had to download
 # retrieve GEO data set and clean data
-geo_data <- "GSE215039"
-geo <- getGEO(geo_data, GSEMatrix=TRUE)
-e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
-phenoData <- pData(e1)
-ann <- e1@featureData@data
 ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
 exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
 dim(phenoData); dim(ann); dim(exp);
@@ -96,6 +92,10 @@ for(disease in unique(phenoData$`disease:ch1`)){
     
     # rm genes from db if not in eset_subset
     dbs <- lapply(dbs_all, function(db){
+      x = lapply(db, function(ligand){
+        ligand[ligand %in% rownames(eset_subset)]
+      })
+      
       db <- db[names(db) %in% rownames(eset_subset)]
       db <- lapply(db, function(i){
         intersect(i, rownames(eset_subset))
@@ -104,7 +104,7 @@ for(disease in unique(phenoData$`disease:ch1`)){
     })
     
     # Fast GSEA, run GSEA for all datasets and rank
-    cores <- 4
+    cores <- 1
     funs <- list(cfgsea_p = cfgsea_p,
                  cgsva_p = cgsva_p,
                  cpca_p = cpca_p,
@@ -136,4 +136,3 @@ for(disease in unique(phenoData$`disease:ch1`)){
 saveRDS(do.call(rbind, rank_list), here::here("results",paste0(geo_data,".rds")))
 
 ```
-
