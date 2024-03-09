@@ -90,13 +90,14 @@ for(disease in unique(phenoData$`disease:ch1`)){
     ## remove variables with zero variance
     eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
     
-    # rm genes from db if not in eset_subset
+    # remove genes that are not in eset_subset
     dbs <- lapply(dbs_all, function(db){
+      ligands_to_match <- unique(c(treatment, rownames(eset_subset)))
       x = lapply(db, function(ligand){
-        ligand[ligand %in% rownames(eset_subset)]
+        ligand[ligand %in% ligands_to_match]
       })
       
-      db <- db[names(db) %in% rownames(eset_subset)]
+      db <- db[names(db) %in% ligands_to_match]
       db <- lapply(db, function(i){
         intersect(i, rownames(eset_subset))
       })
@@ -132,7 +133,8 @@ for(disease in unique(phenoData$`disease:ch1`)){
                                      platform = "Illumina NovaSeq 6000")
   }
 }
-
-saveRDS(do.call(rbind, rank_list), here::here("results",paste0(geo_data,".rds")))
+results_path <- here::here("results",
+                   paste0(geo_data,"updatedRankList",".rds"))
+saveRDS(do.call(rbind, rank_list), results_path)
 
 ```

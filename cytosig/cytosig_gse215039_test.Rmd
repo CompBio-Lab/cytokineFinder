@@ -106,14 +106,14 @@ final_result <- selected_tables_list %>%
 
 final_result[is.null(final_result)] <- NaN
 
-to_csv <- final_result %>%
-  column_to_rownames(var = "Gene")
-write_csv(to_csv, "gse215039_merged_withNA.csv")
+# to_csv <- final_result %>%
+#   column_to_rownames(var = "Gene")
+# write_csv(to_csv, "gse215039_merged_withNA.csv")
 
 remove_na <- final_result %>%
   drop_na()
 
-write_csv(remove_na, "gse215039_merged.csv")
+#write_csv(remove_na, "gse215039_merged.csv")
 ```
 
 ```{r}
@@ -175,7 +175,7 @@ write_csv(remove_na, "gse215039_merged.csv")
 
 ```{r}
 # convert to rank
-gse215039 <- readRDS(here::here("results/GSE215039.rds"))
+gse215039 <- readRDS(here::here("results/GSE215039updatedRankList.rds"))
 
 cytosig_results <- read_csv(here::here("cytosig/results/cytosig_z_scores.csv")) 
 
@@ -186,14 +186,16 @@ cytosig_results_long <- cytosig_results %>%
   group_by(ID) %>%
   arrange(ranks)
 
-cytosig_results_long %>%
-  filter(enriched_signals %in% c("TNF", "IL1B","IL6")) %>% View()
+cytosig_trt <- cytosig_results_long %>%
+  filter(enriched_signals %in% c("TNF", "IL1B","IL6")) %>%
+  mutate(database = "cytosig", ranks = round(ranks))
 ```
 
 ```{r}
 gse215039 %>% 
   group_by(method_db, cytokine, disease) %>% 
-  summarise(mean = mean(rank, na.rm=TRUE), sd = sd(rank, na.rm = TRUE),
+  summarise(mean = mean(rank, na.rm=TRUE), 
+            sd = sd(rank, na.rm = TRUE),
             db = unique(database)) %>%  
   ggplot(aes(x = reorder(method_db, mean), y = mean, fill = db)) +
   geom_bar(stat = "identity", position = "dodge") + 
@@ -202,14 +204,37 @@ gse215039 %>%
   ylab("Mean Rank By Study/Cytokine") +
   xlab("Method + Database Annotation") +
   facet_grid(disease~cytokine) + 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  theme(axis.text=element_text(size=10), legend.text = element_text(size=8)) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust=1)) +
+  theme(axis.text=element_text(size=10), 
+        legend.text = element_text(size=8)) +
   scale_fill_brewer(palette = "Pastel1") +
   theme_classic() +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(legend.position = "bottom", 
+        axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust=1))
 ```
 
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(GEOquery)
+library(data.table)
+library(ggplotify)
+library(here)
+
+load(here::here("data/ligand_receptor_db.RData")) ## run code/ligand_receptor_dbs.Rmd first
+dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
+          fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
+
+source(here::here("code/funcs.R"))
+```
+
+
+```{r, subset on tnf and non-OA samples}
 #troubleshoot non-OA TNF treatment
 tnf_subset <- subset(phenoData, `disease:ch1` == "non-OA" & 
                                 `treatment:ch1` %in% c("No treatment", "TNF"))
@@ -227,16 +252,20 @@ eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
 
 ## remove variables with zero variance
 #eset_subset <- eset_subset[apply(eset_subset, 1, sd) > 0, ]
-    
+
 # rm genes from db if not in eset_subset
 dbs <- lapply(dbs_all, function(db){
-  db <- db[names(db) %in% rownames(eset_subset)]
-  db <- lapply(db, function(i){
-    intersect(i, rownames(eset_subset))
+  x = lapply(db, function(ligand){
+    ligand[ligand %in% c(treatment,rownames(eset_subset))]
     })
-  db[sapply(db, length) > 0]
-  })
-    
+  
+      db <- db[names(db) %in% c(treatment,rownames(eset_subset))]
+      db <- lapply(db, function(i){
+        intersect(i, rownames(eset_subset))
+      })
+      db[sapply(db, length) > 0]
+    })    
+
 # Fast GSEA, run GSEA for all datasets and rank
 cores <- 1
 funs <- list(cfgsea_p = cfgsea_p,
@@ -245,10 +274,12 @@ funs <- list(cfgsea_p = cfgsea_p,
              cpcr_p = cpcr_p,
              cgsvar_p = cgsvar_p) 
 result <- run_all(eset_subset, y, obs_id, dbs, cores, funs)
+
 ranks <- lapply(result, function(db){
   100 - 100*round(sapply(db, function(ligand){ 
-    k = which(names(ligand) == trt[treatment])
+    k = which(names(ligand) == "TNF")
     ifelse(length(k) == 0, NA, k)
-    })/sapply(db, length), 2)})  
+    })/sapply(db, length), 2)}) 
+
 ```
 
