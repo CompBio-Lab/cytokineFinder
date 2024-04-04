@@ -1,0 +1,144 @@
+---
+title: "scDiffCom"
+author: "Jeffrey Tang"
+date: "2024-03-12"
+output: html_document
+---
+
+```{r}
+library(Seurat)
+library(scDiffCom)
+library(data.table)
+```
+
+
+Prepare a Seurat object
+The input of scDiffCom must be a Seurat object with cells annotated by cell types. A pairwise condition on the cells is also necessary for the differential analysis.
+
+As a toy-model example, we use a down-sampled Seurat object containing mouse liver cells from Tabula Muris Senis. This object is part of the package
+
+```{r}
+seurat_object <- scDiffCom::seurat_sample_tms_liver
+seurat_object
+```
+
+```{r}
+# The object already contains a column "cell_type" in its meta.data
+table(seurat_object[["cell_type"]])
+```
+
+```{r}
+# Load future (optional)
+library(future)
+plan(sequential) # sequentially in the current R process, equivalent to do nothing
+#plan(multisession, workers = 4) # background R sessions
+#plan(multicore, workers = 4) # forked R processes, not Windows/not RStudio
+```
+
+```{r}
+# Run differential analysis with default parameters
+scdiffcom_object <- run_interaction_analysis(
+  seurat_object = seurat_object,
+  LRI_species = "mouse",
+  seurat_celltype_id = "cell_type",
+  seurat_condition_id = list(
+    column_name = "age_group",
+    cond1_name = "YOUNG",
+    cond2_name = "OLD"
+  )
+)
+## Extracting data from assay 'RNA' and slot 'data' (assuming normalized log1p-transformed data).
+## Converting normalized data from log1p-transformed to non-log1p-transformed.
+## Input data: 726 genes, 468 cells and 5 cell-types.
+## Input ligand-receptor database: 4582 mouse interactions.
+## Number of LRIs that match to genes present in the dataset: 1173.
+## Type of analysis to be performed: differential analysis between YOUNG and OLD cells.
+## Total number of potential cell-cell interactions (CCIs): 29325 (5 * 5 * 1173).
+## Performing permutation analysis (1000 iterations by batches of 1000) on 8952 potential CCIs.
+## Performing batch 1 of 1.
+## Filtering and cleaning 'raw' CCIs.
+## Returning 1896 detected CCIs.
+## Performing over-representation analysis on the categories: LRI, LIGAND_COMPLEX, RECEPTOR_COMPLEX, ER_CELLTYPES, EMITTER_CELLTYPE, RECEIVER_CELLTYPE, GO_TERMS, KEGG_PWS.
+## Successfully returning final scDiffCom object.
+```
+
+The output of run_interaction_analysis is an S4 object of class scDiffCom:
+```{r}
+scdiffcom_object
+```
+
+Explore the results manually
+Instead of using the Shiny app, the results can also be extracted directly from the scDiffCom object with the provided accessors:
+
+GetParameters() returns the list of parameters used by run_interaction_analysis()
+GetTableCCI() returns a (complete or simplified) data.table either of the detected CCIs or of all the hypothetical CCIs.
+GetTableORA() returns a list of (complete or simplified) data.tables with over-representation results.
+From there, results can be analysed and visualised from either custom or scDiffCom functions.
+
+```{r}
+# Retrieve and display all detected CCIs
+CCI_detected <- GetTableCCI(scdiffcom_object, type = "detected", simplified = TRUE)
+
+# Number of CCIs per regulation type (here with age)
+table(CCI_detected$REGULATION)
+## 
+## DOWN FLAT  NSC   UP 
+##  115  927  820   34
+
+# Retrieve the ORA results
+ORA_results <- GetTableORA(scdiffcom_object, categories = "all", simplified = TRUE)
+
+# Categories available
+names(ORA_results)
+## [1] "LRI"               "LIGAND_COMPLEX"    "RECEPTOR_COMPLEX" 
+## [4] "ER_CELLTYPES"      "EMITTER_CELLTYPE"  "RECEIVER_CELLTYPE"
+## [7] "GO_TERMS"          "KEGG_PWS"
+```
+
+```{r}
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(
+  CCI_detected,
+  aes(
+     x = LOGFC,
+     y = -log10(BH_P_VALUE_DE + 1E-2),
+     colour = REGULATION
+  )
+) + geom_point(
+) + scale_colour_manual(
+  values = c("UP" = "red", "DOWN" = "blue", "FLAT" = "green", "NSC" = "grey")
+) + xlab(
+  "log(FC)"
+) + ylab(
+  "-log10(Adj. p-value)"
+)
+```
+
+Overrepresentation analysis:
+```{r}
+# Plot the most over-represented up-regulated LRIs
+# PlotORA returns a ggplot object that you can further optimize (e.g. here to place the legend)
+PlotORA(
+  object = scdiffcom_object,
+  category = "LRI",
+  regulation = "UP"
+) + theme(
+  legend.position = c(0.85, 0.4),
+  legend.key.size = unit(0.4, "cm")
+)
+```
+
+Network Over-representation cell types:
+```{r}
+if (!require("visNetwork")) install.packages("visNetwork")
+if (!require("igraph")) install.packages("igraph")
+if (!require("kableExtra")) install.packages("kableExtra")
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+
+BuildNetwork(
+  object = scdiffcom_object
+)
+```
+
