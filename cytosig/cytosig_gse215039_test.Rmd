@@ -182,22 +182,32 @@ cytosig_results <- read_csv(here::here("cytosig/results/cytosig_z_scores.csv"))
 # Rank the enriched signals
 cytosig_results_long <- cytosig_results %>% 
   pivot_longer(!ID, names_to = "enriched_signals", values_to = "z_scores") %>%
-  mutate(ranks = 100*(rank(abs(z_scores))/n())) %>%
+  mutate(rank = 100*(rank(abs(z_scores))/n())) %>%
   group_by(ID) %>%
-  arrange(ranks)
+  arrange(rank)
 
 cytosig_trt <- cytosig_results_long %>%
-  filter(enriched_signals %in% c("TNF", "IL1B","IL6")) %>%
-  mutate(database = "cytosig", ranks = round(ranks))
+  filter(enriched_signals %in% c("TNFA", "IL1B","IL6")) %>%
+  mutate(method = "cytosig", 
+         rank = round(rank),
+         method_db = "cytosig",
+         database = "cytosig",
+         enriched_signals = gsub("IL1B", "IL-1b", enriched_signals)) %>%
+  mutate(enriched_signals = gsub("IL6", "IL-6", enriched_signals)) %>%
+  mutate(enriched_signals = gsub("TNFA", "TNF", enriched_signals)) %>%
+  separate(ID, into = c("disease", "cytokine", "logFC"), sep = "_") %>%
+  filter(cytokine == enriched_signals)
+
 ```
 
 ```{r}
 gse215039 %>% 
-  group_by(method_db, cytokine, disease) %>% 
-  summarise(mean = mean(rank, na.rm=TRUE), 
-            sd = sd(rank, na.rm = TRUE),
-            db = unique(database)) %>%  
-  ggplot(aes(x = reorder(method_db, mean), y = mean, fill = db)) +
+  group_by(method_db, cytokine, disease, rank) %>% 
+  summarise(mean = mean(rank, na.rm = FALSE),  
+            sd = sd(rank, na.rm = FALSE),  # Conditional SD
+            db = unique(database),
+            method = unique(method)) %>%  
+  ggplot(aes(x = reorder(db, mean), y = mean, fill = method)) +
   geom_bar(stat = "identity", position = "dodge") + 
   geom_errorbar(aes(ymin=mean-1, ymax=mean+sd), width=.2,
              position=position_dodge(.9)) +
@@ -282,4 +292,42 @@ ranks <- lapply(result, function(db){
     })/sapply(db, length), 2)}) 
 
 ```
+# Merge cytosig data together with other benchmarking methods
+```{r}
+subset_gse215039 <- gse215039 %>%
+  select(method, rank, cytokine, disease, database, method_db)
+subset_cytosig <-cytosig_trt %>%
+  select(method, rank, cytokine, disease) %>%
+  mutate(database = "cytosig",
+         method_db = "cytosig")
 
+all <- rbind(subset_gse215039, subset_cytosig) %>%
+  group_by(method_db, database, cytokine, disease, rank) %>% 
+  summarise(mean = mean(rank, na.rm = FALSE),  
+            sd = sd(rank, na.rm = FALSE),  # Conditional SD
+            db = unique(database),
+            method = unique(method)) %>%
+  mutate(method_type = )
+
+all %>%  
+  ggplot(aes(x = reorder(method_db, mean), y = mean, fill = method)) +
+  geom_bar(stat = "identity", position = "dodge") + 
+#  geom_errorbar(aes(ymin=mean-1, ymax=mean+sd), width=.2,
+#             position=position_dodge(.9)) +
+  ylab("Mean Rank By Study/Cytokine") +
+  xlab("Method + Database Annotation") +
+  facet_grid(disease~cytokine) + 
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust=1)) +
+  theme(axis.text=element_text(size=10), 
+        legend.text = element_text(size=8)) +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_classic() +
+  theme(legend.position = "bottom", 
+        axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust=1))
+
+
+```
