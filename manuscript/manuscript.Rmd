@@ -42,8 +42,17 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 # Introduction
+Importance of identifying driver cytokines
 
-- importance of identifying driver cytokines
+Cytokines are a broad class of low-weight molecules that act on cellular signalling cascades relevant to human immunology, from anti-pathogen responses to tissue-damaging inflammation (Lin and Leonard 2019). These cascades influence a wide variety of immune and inflammatory responses, cytokines have become well recognized for their roles in allergy, asthma, and clinical immunology which have primarily been driven by studies on cell biology, T cell polarization, and cytokine measurement experiments (ie. immunoassays) (Ghosh and Mersha 2022). As cytokines are an initiation point for these response mechanisms, leveraging it as a therapeutic target is desirable for several autoimmune diseases. It is thus important to identify driver cytokines involved in these regulatory activities (Deckers et al. 2023). Immunoassays such as enzyme linked immunosorbent assay (ELISA) and Luminex xMAP, can directly measure cytokine release, however due to the transitory nature of cytokines, measuring abundance prove to be challenging (Jiang et al. 2021; Deckers et al. 2023).
+
+Researchers have considered compiling information relevant to cytokine signalling targets using high-throughput transcriptomic techniques and characterising patterns of the transcriptome to provide better understanding of relevant genes influenced cytokine-receptor binding, then validating findings with protein-protein interaction assays to bypass the limitations of low-throughput from immunoassays (Jiang et al. 2021).
+
+Though cytokines have a short half-life, the signalling crosstalk mechanisms induced are often longer lasting and can act as a proxy to measure cytokine activity (Jiang et al. 2021). For example, a phenomena called receptor trafficking whereby in certain cases of surface receptor activation by a cytokine, promotes receptor gene expression to drive receptor syntheses further enhancing cellular responsiveness while in some instances, can lead to degradation of receptors (Martinez-Fabregas et al. 2019). Therefore, regulation of surface receptor expression is a dynamic process that involves a balance between receptor trafficking mechanisms and cytokine exposure. Thus surface receptor expression levels are an important factor to consider that can be used to identify cytokine activity levels (Farhat et al. 2021).
+
+To infer on cytokine activity using receptor expression, we leverage publicly available high-throughput transcriptomic datasets and common strategies that utilise pre-defined gene sets that can be aggregated from catalogues of documented ligand-receptor interactions (ie. databases). We highlight 2 common strategies that rely on these annotations, gene set enrichment methods, gene summarization methods and a common discovery based method which considers building a model based on training data that are not reliant on annotations such as ligand-receptor interactions.
+
+
 - mention limitations in publicly available cytokine data
 - state hypothesis: using gene expression data we can identify the driver cytokines of disease
 
@@ -52,6 +61,16 @@ knitr::opts_chunk$set(echo = FALSE,
   - cytokine stimulations
   - anti-cytokine treatment
   - studies with paired gene-expression and protein data
+  
+We selected studies that performed perturbation experiments to probe the response of cells given a conditional change. Perturbation-response profiling often employ molecular techniques to isolate a single cell into a controlled environment. As we are building on the assumption that intracellular effects of signalling cascades affect surface receptor gene expression, given the controlled environment and the response factor being a single cytokine treatment, we can assess how well receptor expression can capture cytokine activity using a variety of approaches in comparison to a de novo model-based method that is pre-trained on a large variety of data sets.
+
+To test our hypothesis, we selected four different gene expression datasets, which were chosen for their variety of cytokines and easy accessibility. The first three datasets were all used in the same paper in parallel experiments, and can be found on GEO under GSE 135421, GSE 135425, and GSE 135426. These datasets compare healthy, unstimulated human neutrophils with those stimulated with one of three cytokines. They each contain six samples provided by three donors; the first sample per donor was created by stimulating the cells with IL-4, IFNg, and IL-13, respectively, while the last sample is a negative control.
+
+The last dataset can be found on GEO under GSE 215039. This dataset compares healthy chondrocytes with osteoarthritis-affected chondrocytes when left untreated and when stimulated with one of three cytokines: IL-1B, IL-6, and TNF. This dataset contains 40 samples; 5 for each group mentioned above.
+
+We also performed a literature search to gather different ligand-receptor databases. We selected a variety of databases which include the ligand-receptor interaction sets. We selected five arbitrarily due to the fact that there is an exhaustive list of databases that can be considered. Firstly, we selected a database generated by the Bader Lab group which developed an automated approach to construct a cell-cell interactions database and classified ligands and receptors as distinct proteins from gene ontology terms (Isserlin et al, 2020). We considered also considered CITEdb, a manually curated database for cell-cell interactions (Shan et al, 2022), FANTOM5 which is an atlas of enhancers, promoters, and other regulatory elements that capture gene regulatory networks of the transcriptome covering different cellular states (Kawaji et al, 2017), and NicheNet which is a method that predicts which ligands can influence expression in another cell using single cell expression data (Browaeys, Saelens, and Saeys 2020).
+
+
   
 ## study data
   - asthma gene expression data
