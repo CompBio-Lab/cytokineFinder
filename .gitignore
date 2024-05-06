@@ -16,3 +16,4 @@ data/GSE*
 **.tsv
 **.xlsx
 **.diff
+**.merge
