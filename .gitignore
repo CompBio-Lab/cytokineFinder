@@ -12,3 +12,8 @@ sif/
 data/GSE*
 .env
 .sh_history
+**.csv
+**.tsv
+**.xlsx
+**.diff
+**.merge

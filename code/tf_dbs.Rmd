@@ -1,0 +1,38 @@
+---
+title: "Transcription Factor databases"
+author: "Jeffrey Tang"
+date: "2024-04-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+```
+
+# TRRUST v2
+```{r}
+# https://www.grnpedia.org/trrust/result_tonly.php?gene=TNF&species=human&confirm=
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5753191/
+```
+
+# TFLink
+```{r}
+# TFLink
+# https://tflink.net/download/
+# https://academic.oup.com/database/article/doi/10.1093/database/baac083/6702175
+```
+
+# CytReg v2
+```{r}
+# https://cytreg.bu.edu/about_v2.html
+
+```
+
+# NicheNet
+```{r}
+list.files(here::here("data/tf_db/"))
+nn <- readRDS(here::here("data/tf_db/signaling_network_human_21122021.rds"))
+```
+

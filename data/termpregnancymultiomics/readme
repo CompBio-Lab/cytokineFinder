@@ -1,0 +1,5 @@
+The data file contains the following variables:
+"featurepatients" patients index.
+"featuretimes" trimesters of pregnancy from 1 to 4 where 1-3 represents the first three trimesters from the beginning to delivery, and postpartum is denoted by 4.
+"featureweeks" weeks of pregnancy from the beginning.
+"InputData" 7 multiomics measurements corresponding to the 17 patients sampled at three trimesters of pregnancy. 'Cellfree RNA','PlasmaLuminex','SerumLuminex','Microbiome','ImmuneSystem','Metabolomics', 'PlasmaSomalogic' constitutes these 7 multiomics datasets.
