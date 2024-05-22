@@ -57,22 +57,22 @@ names(y) <- rownames(golimumab)
 obs_id = golimumab$`subject:ch1`
 
 # rm genes from db if not in eset
-dbs <- lapply(dbs_all, function(db){
-  db <- db[names(db) %in% rownames(eset)]
-  db <- lapply(db, function(i){
-    intersect(i, rownames(eset))
-  })
-  db[sapply(db, length) > 0]
-})
+# dbs <- lapply(dbs_all, function(db){
+#   db <- db[names(db) %in% rownames(eset)]
+#   db <- lapply(db, function(i){
+#     intersect(i, rownames(eset))
+#   })
+#   db[sapply(db, length) > 0]
+# })
 
-
+dbs <- extract_db(eset = eset, dbs = dbs_all)
 ```
 
 # Run all methods
 
 ```{r}
 # Fast GSEA, run GSEA for all datasets and rank
-cores <- 4
+cores <- 1
 
 funs <- list(cfgsea_p = cfgsea_p,
              cgsva_p = cgsva_p,
@@ -84,6 +84,11 @@ result <- run_all(eset, y, obs_id, dbs, cores, funs)
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
+```
+# debug
+```{r}
+funs <- list(cfgsea_p = cfgsea_p,
+             cgsva_p = cgsva_p)
 ```
 
 # save data
