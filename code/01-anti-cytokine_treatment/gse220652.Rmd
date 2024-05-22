@@ -1,7 +1,7 @@
 ---
-title: "GSE215039"
-author: "Amrit Singh"
-date: "2023-07-26"
+title: "GSE220652"
+author: "Jeffrey Tang"
+date: "2023-11-14"
 output: html_document
 ---
 
@@ -22,54 +22,53 @@ source(here::here("code/funcs.R"))
 
 ```
 
-# download data from
-# https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE215039
-- "GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"
-- "GSE215039_series_matrix.txt"                  
-- "Human.GRCh38.p13.annot.tsv"
 
 ```{r}
 # retrieve GEO data set and clean data
-geo_data <- "GSE215039"
-geo <- getGEO(geo_data, GSEMatrix=TRUE)
-e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
-phenoData <- pData(e1)
-
-phenoData <- read.csv(here("data/GSE215039/GSE215039_series_matrix.txt"))
-```
-
-
-
-```{r}
-# retrieve GEO data set and clean data
-geo_data <- "GSE215039"
-geo <- getGEO(geo_data, GSEMatrix=TRUE)
+geo_data <- "GSE226244"
+#geo <- getGEO(geo_data, GSEMatrix=TRUE)
+geo <- readRDS(here::here("code/gse/gse226244.rds"))
 e1 <- geo[[paste0(geo_data, "_series_matrix.txt.gz")]]
 phenoData <- pData(e1)
 ann <- e1@featureData@data
-ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
-exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
+ann <- ann[ann$`Gene Symbol` != "", ]
+exp <- exprs(e1)
+#ann <- read.csv(here("data/GSE215039/Human.GRCh38.p13.annot.tsv"), sep="\t", row.names = 1)
+#exp <- read.csv(here("data/GSE215039/GSE215039_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), sep="\t", row.names = 1)
+
 dim(phenoData); dim(ann); dim(exp);
 all(rownames(phenoData) == colnames(exp))
 
-table(phenoData$`disease:ch1`, phenoData$`treatment:ch1`)
+table(phenoData$`disease state:ch1`, phenoData$characteristics_ch1.1)
 
-gensym <- sapply(strsplit(ann$Symbol, "///"), trimws)
+eset <- exp[rownames(ann), rownames(golimumab)]
+all(rownames(eset) == rownames(ann))
+
+gensym <- sapply(strsplit(ann$`Gene Symbol`, "///"), trimws)
 id_gensym <- data.table(gensym = unlist(gensym),
            probeids = rep(rownames(ann), sapply(gensym, length))) %>% 
   filter(gensym %in% unique(unlist(dbs_all)))
 
-X = exp[id_gensym$probeids, ] %>% 
+X = eset[id_gensym$probeids, ] %>% 
   as.data.frame() %>% 
   mutate(genesym = id_gensym$gensym) %>% 
   group_by(genesym) %>% 
   summarise(across(everything(), ~ mean(.x, na.rm=TRUE)))
 
-## log2 transform data
 eset <- as.matrix(X[,-1])
-eset[eset < 1] <- 1
-eset <- log2(eset)
 rownames(eset) <- X$genesym
+y = golimumab$`visit:ch1`
+names(y) <- rownames(golimumab)
+obs_id = golimumab$`subject:ch1`
+
+# rm genes from db if not in eset
+dbs <- lapply(dbs_all, function(db){
+  db <- db[names(db) %in% rownames(eset)]
+  db <- lapply(db, function(i){
+    intersect(i, rownames(eset))
+  })
+  db[sapply(db, length) > 0]
+})
 
 ```
 

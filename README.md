@@ -40,7 +40,6 @@ git clone https://github.com/CompBio-Lab/cytokineFinder.git
 ### pull docker image
 
 ```bash
-cd multi_omics/data
 make sockeye_pull
 mkdir sif
 mv cytokinefinder sif/
