@@ -1,0 +1,54 @@
+---
+title: "gse40240"
+author: "Jeffrey Tang"
+date: "2024-05-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(here)
+
+load(here::here("data/ligand_receptor_db.RData")) ## run code/ligand_receptor_dbs.Rmd first
+dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
+          fantom5=fantom5, citedb=citedb, all_dbs=all_dbs)
+
+source(here::here("code/funcs.R"))
+```
+
+# Read GEO data
+```{r}
+cytokines <- read_csv(here("data/GSE40240/demo.cytokines.csv"))
+pData <- read_csv(here("data/GSE40240/GSE40240_phenoData.csv"))
+eset <- read_csv(here("data/GSE40240/GSE40240_eset.csv"))[,-1]
+```
+## Tidy Data
+```{r}
+# 
+metadata <- pData %>% 
+  separate(title, into = c("Subject", "Replicate"), sep = ", ") %>%
+  mutate(Subject = gsub("Subject ", "", Subject)) %>%
+  rename(ID = ...1)
+
+eset <- eset %>% 
+  column_to_rownames("gene_sym") %>%
+  as.matrix
+
+obs_id <- metadata$Subject
+y <- metadata$source_name_ch1
+names(y) <- metadata$ID
+```
+
+## Get receptor genes from database using eset gene set
+```{r}
+dbs <- extract_db(cytokine = "", eset = eset,dbs = dbs_all)
+```
+
+```{r}
+cores <- 1
+
+funs <- list(cfgsea_p = cfgsea_p,
+             cgsva_p = cgsva_ps
+result <- cgsva(eset, y, obs_id, dbs)
+```
+
