@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(GEOquery)
 library(data.table)
-library(ggplotify)
+#library(ggplotify)
 
 load(here::here("data/ligand_receptor_db.RData")) ## run code/ligand_receptor_dbs.Rmd first
 dbs_all = list(baderlab=baderlab, nichenet=nichenet, 
@@ -72,7 +72,7 @@ dbs <- lapply(dbs_all, function(db){
 
 ```{r}
 # Fast GSEA, run GSEA for all datasets and rank
-cores <- 4
+cores <- 1
 
 funs <- list(cfgsea_p = cfgsea_p,
              cgsva_p = cgsva_p,
@@ -84,6 +84,11 @@ result <- run_all(eset, y, obs_id, dbs, cores, funs)
 ranks <- lapply(result, function(i){
   100 - 100*round(sapply(i, function(j){ which(names(j) == "TNF")})/sapply(i, length), 2)
 })
+
+
+gsvapar <- GSVA::gsvaParam(eset, dbs$nichenet, maxDiff=TRUE)
+
+gsva_eset <- GSVA::gsva(gsvapar)
 ```
 
 # save data
