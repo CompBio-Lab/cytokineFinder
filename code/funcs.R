@@ -1,5 +1,5 @@
 # Helper fun to filter db and extract ligands-receptors pairs match
-extract_db <- function(cytokine, eset, dbs) {
+extract_db <- function(cytokine = NULL, eset, dbs) {
   # For all databases, search for ligand that matched cytokine and eset
   genes <- rownames(eset)
   receptors_interest <- c(cytokine, genes)
@@ -16,12 +16,26 @@ extract_db <- function(cytokine, eset, dbs) {
 
 ## enrichment functions
 
-create_design <- function(y, obs_id){
-  if(is.null(obs_id)) {
-    #for unpaired datasets
-    design <- model.matrix(~y) 
-  } else{
-    design <- model.matrix(~y+obs_id) 
+# create_design <- function(y, obs_id){
+#   if(is.null(obs_id)) {
+#     #for unpaired datasets
+#     design <- model.matrix(~y) 
+#   } else{
+#     design <- model.matrix(~y+obs_id) 
+#   }
+#   return(design)
+# }
+
+create_design <- function(y, obs_id = NULL) {
+  if (is.null(obs_id)) {
+    # For unpaired datasets
+    design <- model.matrix(~ y)
+  } else {
+    # Identify paired IDs, excluding NA values
+    paired <- !is.na(obs_id) & (duplicated(obs_id) | duplicated(obs_id, fromLast = TRUE))
+    
+    # Create design matrix
+    design <- model.matrix(~ y + paired + obs_id:paired)
   }
   return(design)
 }
@@ -59,7 +73,16 @@ cfgsea_p = function(eset, y, obs_id, dbs, cores){
 
 # GSVA
 cgsva = function(eset, y, obs_id, db){
-  gsva_eset <- GSVA::gsva(eset, db, verbose=FALSE)
+  # line 63 represents defunct code
+  #gsva_eset <- GSVA::gsvaParam(eset, db, verbose=FALSE)
+  
+  # Build GSVA parameter object
+  #gsvapar <- GSVA::gsvaParam(eset, db, maxDiff=TRUE)
+  #gsva_eset <- GSVA::gsva(gsvapar)
+  # Create the GSVA parameter object
+  gsvapar <- GSVA::gsvaParam(eset, db, maxDiff = TRUE)
+  # Run GSVA using the parameter object
+  gsva_eset <- t(GSVA::gsva(gsvapar))
   design <- create_design(y, obs_id)
   fit <- limma::eBayes(limma::lmFit(gsva_eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
