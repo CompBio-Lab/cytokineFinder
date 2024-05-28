@@ -87,8 +87,14 @@ ranks <- lapply(result, function(i){
 ```
 # debug
 ```{r}
+# looked at inputs, inputs were all expected
+
 funs <- list(cfgsea_p = cfgsea_p,
              cgsva_p = cgsva_p)
+
+result <- run_all(eset, y, obs_id, dbs, cores, funs)
+
+# check out Rstudio debugger and go through
 ```
 
 # save data

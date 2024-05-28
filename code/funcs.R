@@ -16,26 +16,12 @@ extract_db <- function(cytokine = NULL, eset, dbs) {
 
 ## enrichment functions
 
-# create_design <- function(y, obs_id){
-#   if(is.null(obs_id)) {
-#     #for unpaired datasets
-#     design <- model.matrix(~y) 
-#   } else{
-#     design <- model.matrix(~y+obs_id) 
-#   }
-#   return(design)
-# }
-
-create_design <- function(y, obs_id = NULL) {
-  if (is.null(obs_id)) {
-    # For unpaired datasets
-    design <- model.matrix(~ y)
-  } else {
-    # Identify paired IDs, excluding NA values
-    paired <- !is.na(obs_id) & (duplicated(obs_id) | duplicated(obs_id, fromLast = TRUE))
-    
-    # Create design matrix
-    design <- model.matrix(~ y + paired + obs_id:paired)
+create_design <- function(y, obs_id){
+  if(is.null(obs_id)) {
+    #for unpaired datasets
+    design <- model.matrix(~y)
+  } else{
+    design <- model.matrix(~y+obs_id)
   }
   return(design)
 }
@@ -82,7 +68,7 @@ cgsva = function(eset, y, obs_id, db){
   # Create the GSVA parameter object
   gsvapar <- GSVA::gsvaParam(eset, db, maxDiff = TRUE)
   # Run GSVA using the parameter object
-  gsva_eset <- t(GSVA::gsva(gsvapar))
+  gsva_eset <- GSVA::gsva(gsvapar)
   design <- create_design(y, obs_id)
   fit <- limma::eBayes(limma::lmFit(gsva_eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
@@ -154,7 +140,7 @@ cpcr_p = function(eset, y, obs_id, dbs, cores){
 
 # GSVAR
 cgsvar = function(eset, y, obs_id, db){
-  gsva_eset <- t(GSVA::gsva(eset, db, verbose=FALSE))
+  gsva_eset <- GSVA::gsva(eset, db, verbose=FALSE)
   fit <- mixOmics::plsda(gsva_eset, y)
   coef <- abs(mixOmics::selectVar(fit, comp=1)$value$value.var)
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
