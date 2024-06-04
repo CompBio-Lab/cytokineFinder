@@ -1,7 +1,8 @@
-#' Fast Gene Set Enrichment Analysis (FGSEA)
+#' Fast Gene Set Enrichment Analysis for cytokines (cFGSEA)
 #'
 #' @description
-#' Calculates regulatory activities using FGSEA.
+#' Calculate regulatory activity of a list of receptors using FGSEA given some
+#' cytokine of interest
 #'
 #' @details
 #'
