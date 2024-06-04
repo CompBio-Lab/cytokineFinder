@@ -5,10 +5,9 @@
 #' cytokine of interest
 #'
 #' @details
-#'
-#' GSEA (Aravind et al., 2005) starts by transforming the input molecular
-#' readouts in mat to ranks for each sample. Then, an enrichment score
-#' `fgsea` is calculated by walking down the list of features, increasing
+#' GSEA (Aravind et al., 2005) starts by transforming the input expression
+#' matrix to ranks for each sample. Then, an enrichment score `fgsea` is
+#' calculated by walking down the list of features, increasing
 #' a running-sum statistic when a feature in the target feature set is
 #' encountered and decreasing it when it is not. The final score is the maximum
 #' deviation from zero encountered in the random walk. Finally, a normalized
@@ -23,10 +22,9 @@
 #' DOI: https://doi.org/10.1101/060012.
 #'
 
-## FGSEA
 cfgsea <- function(eset, y, obs_id, db){
   # differential expression analysis
-  # create design matrix for
+  # create design matrix for both
   design <- create_design(y, obs_id)
 
   fit <- limma::eBayes(limma::lmFit(eset, design))
