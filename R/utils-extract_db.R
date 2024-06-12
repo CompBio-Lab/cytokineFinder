@@ -24,7 +24,6 @@ extract_db <- function(cytokine = NULL, eset, dbs) {
     db <- db[names(db) %in% receptors_interest] |>
       lapply(function(i) { intersect(i, genes) })
     filter_db <- db[sapply(db, length) > 0]
-    return(filter_db)
   })
   return(output_db)
 }
