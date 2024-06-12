@@ -24,9 +24,6 @@
 
 cfgsea <- function(eset, design, db){
   # differential expression analysis
-  # create design matrix for both
-  #design <- create_design(y, obs_id) 
-  
   fit <- limma::eBayes(limma::lmFit(eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
   
