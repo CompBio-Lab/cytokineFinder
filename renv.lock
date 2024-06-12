@@ -272,7 +272,7 @@
     },
     "GSVA": {
       "Package": "GSVA",
-      "Version": "1.52.2",
+      "Version": "1.52.3",
       "Source": "Bioconductor",
       "Repository": "Bioconductor 3.19",
       "Requirements": [
@@ -297,7 +297,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "f6540abfc820ca215fe84581efc8a92c"
+      "Hash": "6c562639277c17855149b6c6f8f4040e"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
@@ -1153,14 +1153,14 @@
     },
     "evaluate": {
       "Package": "evaluate",
-      "Version": "0.23",
+      "Version": "0.24.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "daf4a1246be12c1fa8c7705a0935c1a0"
+      "Hash": "a1066cbc05caee9a4bf6d90f194ff4da"
     },
     "fansi": {
       "Package": "fansi",
@@ -2252,14 +2252,14 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "1.1.3",
+      "Version": "1.1.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "42548638fae05fd9a9b5f3f437fbbbe2"
+      "Hash": "3eec01f8b1dee337674b2e34ab1f9bc1"
     },
     "rmarkdown": {
       "Package": "rmarkdown",
