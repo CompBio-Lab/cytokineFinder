@@ -22,10 +22,10 @@
 #' DOI: https://doi.org/10.1101/060012.
 #'
 
-cfgsea <- function(eset, y, obs_id, db){
+cfgsea <- function(eset, design, db){
   # differential expression analysis
   # create design matrix for both
-  design <- create_design(y, obs_id) 
+  #design <- create_design(y, obs_id) 
   
   fit <- limma::eBayes(limma::lmFit(eset, design))
   top <- limma::topTable(fit, coef = 2, n = nrow(fit))
