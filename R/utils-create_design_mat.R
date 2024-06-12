@@ -1,9 +1,13 @@
-#' Helper fun to create the design matrix
+#' Title
 #'
-#' @description
-#' @param y provide the conditions of the study such as treatment or
-#' cell state which 
+#' @param y 
+#' @param obs_id 
 #'
+#' @return
+#' @export
+#'
+#' @examples
+
 create_design <- function(y, obs_id){
   if(is.null(obs_id)) {
     #for unpaired datasets

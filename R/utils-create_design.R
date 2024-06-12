@@ -1,10 +1,12 @@
 #' Helper fun to create the design matrix
 #'
-#' @description
-#' Provide a design matrix for fitting the linear model
+#' @param y 
+#' @param obs_id 
 #'
+#' @return
+#' @export
 #'
-
+#' @examples
 
 create_design <- function(y, obs_id){
   if(is.null(obs_id)) {
