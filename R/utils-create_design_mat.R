@@ -1,15 +1,19 @@
-#' Helper fun to create the design matrix
+#' Create design matrix for the data based on the outcome and the samples
 #'
-#' @description
-#' @param y provide the conditions of the study such as treatment or
-#' cell state which 
+#' @param y 
+#' @param obs_id 
 #'
+#' @return
+#' @export
+#'
+#' @examples
+
 create_design <- function(y, obs_id){
   if(is.null(obs_id)) {
     #for unpaired datasets
-    design <- model.matrix(~y)
+    design <- stats::model.matrix(~y)
   } else{
-    design <- model.matrix(~y+obs_id)
+    design <- stats::model.matrix(~y+obs_id)
   }
   return(design)
 }

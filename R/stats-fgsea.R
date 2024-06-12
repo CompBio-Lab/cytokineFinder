@@ -21,6 +21,12 @@
 #' Korotkevich G. et al. (2021) Fast gene set enrichment analysis. bioRxiv.
 #' DOI: https://doi.org/10.1101/060012.
 #'
+#' @param eset 
+#' @param design 
+#' @param db 
+#' 
+#' @return GSVA result for set of ligands that are significantly enriched
+#' ordered by p-value
 
 cfgsea <- function(eset, design, db){
   # differential expression analysis
@@ -37,4 +43,5 @@ cfgsea <- function(eset, design, db){
   result <- run_fgsea$pval
   names(result) <- run_fgsea$pathway
   result[order(result)]
+  return(result)
 }

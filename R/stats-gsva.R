@@ -1,6 +1,13 @@
 #' Gene Set Variation Analysis for cytokines (cGSVA)
 #'
+#' @param eset 
+#' @param design 
+#' @param db 
 #'
+#' @return
+#' @export
+#'
+#' @examples
 
 cgsva = function(eset, design, db){
   gsvapar <- GSVA::gsvaParam(eset, db, maxDiff = TRUE)
