@@ -1,4 +1,4 @@
-#' Helper fun to filter db and extract ligands-receptors pairs match
+#' Helper function to filter database and extract ligands-receptors pairs match
 #'
 #' @description
 #' Provide a list of databases and match ligands of interest.
@@ -18,6 +18,7 @@ extract_db <- function(cytokine = NULL, eset, dbs) {
   # For all databases, search for ligand that matched cytokine and eset
   genes <- rownames(eset)
   receptors_interest <- c(cytokine, genes)
+  
   # Now we could get databases based on the rownames of eset and cytokine
   output_db <- lapply(dbs, function(db) {
     # Then filter on db as well
