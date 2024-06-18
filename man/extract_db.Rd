@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-extract_db.R
 \name{extract_db}
 \alias{extract_db}
-\title{Helper fun to filter db and extract ligands-receptors pairs match}
+\title{Helper function to filter database and extract ligands-receptors pairs match}
 \usage{
 extract_db(cytokine = NULL, eset, dbs)
 }
