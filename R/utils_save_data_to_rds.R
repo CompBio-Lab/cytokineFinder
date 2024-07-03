@@ -26,6 +26,7 @@ save_to_rds <- function(geo_id, dir_path = "data/"){
 }
 
 #' Save multiple GEO datasets in batch
+#' 
 #' This function saves multiple GEO datasets to separate RDS files by
 #' calling `save_to_rds` on each GEO ID.
 #' 
