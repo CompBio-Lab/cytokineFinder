@@ -21,27 +21,32 @@
 #' Korotkevich G. et al. (2021) Fast gene set enrichment analysis. bioRxiv.
 #' DOI: https://doi.org/10.1101/060012.
 #'
-#' @param eset 
-#' @param design 
-#' @param db 
+#' @param eset Expression Set object containing gene expression data.
+#' @param obs_id Observation ID or sample if looking there are biological replicates
+#' @param db ligand-receptor database
+
 #' 
 #' @return GSVA result for set of ligands that are significantly enriched
 #' ordered by p-value
-
+#' 
+#' @importFrom limma eBayes
+#' @importFrom limma lmFit
+#' @importFrom limma topTable
+#' @importFrom fgsea fgsea
+#' 
 cfgsea <- function(eset, design, db){
   # differential expression analysis
-  fit <- limma::eBayes(limma::lmFit(eset, design))
-  top <- limma::topTable(fit, coef = 2, n = nrow(fit))
+  fit <- eBayes(lmFit(eset, design))
+  top <- topTable(fit, coef = 2, n = nrow(fit))
   
   # fgsea
   stats = top$t
   names(stats) <- rownames(top)
-  run_fgsea <- fgsea::fgsea(pathways = db,
-                            stats    = stats,
-                            minSize  = min(sapply(db, length)),
-                            maxSize  = max(sapply(db, length)))
+  run_fgsea <- fgsea(pathways = db,
+                     stats    = stats,
+                     minSize  = min(sapply(db, length)),
+                     maxSize  = max(sapply(db, length)))
   result <- run_fgsea$pval
   names(result) <- run_fgsea$pathway
-  result[order(result)]
-  return(result)
+  return(result[order(result)])
 }
