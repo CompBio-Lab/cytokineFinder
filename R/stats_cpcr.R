@@ -1,11 +1,11 @@
 #' Title
 #'
-#' @param eset 
-#' @param y 
-#' @param obs_id 
-#' @param db 
+#' @param eset Expression Set object containing gene expression data.
+#' @param y Response variable
+#' @param obs_id Observation ID or sample if looking there are biological replicates
+#' @param db ligand-receptor database
 #'
-#' @return
+#' @return 
 #' @export
 #'
 #' @examples
@@ -18,5 +18,5 @@ cpcr <- function(eset, y, obs_id, db){
   fit <- mixOmics::plsda(pcs, y)
   coef <- abs(mixOmics::selectVar(fit, comp=1)$value$value.var)
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
-  coef[order(coef, decreasing = TRUE)]
+  return(coef[order(coef, decreasing = TRUE)])
 }
