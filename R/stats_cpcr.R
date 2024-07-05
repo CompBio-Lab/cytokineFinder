@@ -9,7 +9,7 @@
 #'
 #' @examples
 
-cpcr <- function(eset, treatment, db){
+cpca_plsda <- function(eset, treatment, db){
   pcs <- sapply(db, function(ligand){
     genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
     stats::prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
