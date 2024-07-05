@@ -9,7 +9,7 @@
 #'
 #' @examples
 
-cgsva <- function(eset, design, db){
+cgsva <- function(eset, design, db) {
   gsvapar <- GSVA::gsvaParam(eset, db, maxDiff = TRUE)
   gsva_eset <- GSVA::gsva(gsvapar)
   
