@@ -18,29 +18,27 @@
 #' @examples
 download_from_url <- function(url, 
                               destFile, 
-                              mode = NULL, 
+                              mode = "wb", # windows issue
                               extractZip = FALSE, 
                               extractDir = NULL) {
   # Check if file exists
   if (file.exists(destFile)) { 
     message(paste0("File", destFile, "already exists. Skipping download."))
-  } else {
-    if (is.null(mode)) {
-      # Determine mode if not specified and evaluate if it is a zip file
-      mode <- ifelse(grepl("\\.zip$", url, ignore.case = TRUE), "wb", "auto")
-    }
+  } 
     # Download File
-    utils::download.file(url = url, destfile = destFile, mode = mode)
+    utils::download.file(url = url, destfile = destFile, mode = "wb")
     
     # Extract if requested
-    if (extractZip && grepl("\\.zip$", ignore.case = TRUE)) {
+    if (extractZip) {
       if (is.null(extractDir)) {
-        utils::unzip(destFile, exdir = dirname(destFile))
-      } else {
+        extractDir <- dirname(destFile)
+      }
+      tryCatch({
         utils::unzip(destFile, exdir = extractDir)
+        message("File successfully extracted.")
+      }, error = function(e) {
+        message("Error extracting zip file:", e$message)
+      }) 
       }
     }
-  }
-  
-}
 

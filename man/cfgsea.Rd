@@ -7,11 +7,11 @@
 cfgsea(eset, design, db)
 }
 \arguments{
-\item{eset}{}
+\item{eset}{Expression Set object containing gene expression data.}
 
-\item{design}{}
+\item{design}{Design matrix generated from create_design()}
 
-\item{db}{}
+\item{db}{ligand-receptor database}
 }
 \value{
 GSVA result for set of ligands that are significantly enriched
@@ -23,14 +23,14 @@ cytokine of interest
 }
 \details{
 GSEA (Aravind et al., 2005) starts by transforming the input expression
-matrix to ranks for each sample. Then, an enrichment score `fgsea` is
+matrix to ranks for each sample. Then, an enrichment score \code{fgsea} is
 calculated by walking down the list of features, increasing
 a running-sum statistic when a feature in the target feature set is
 encountered and decreasing it when it is not. The final score is the maximum
 deviation from zero encountered in the random walk. Finally, a normalized
-score `norm_fgsea`, can be obtained by computing the z-score of the estimate
+score \code{norm_fgsea}, can be obtained by computing the z-score of the estimate
 compared to a null distribution obtained from N random permutations. The used
-implementation is taken from the package `fgsea` (Korotkevich et al., 2021).
+implementation is taken from the package \code{fgsea} (Korotkevich et al., 2021).
 
 Aravind S. et al. (2005) Gene set enrichment analysis: A knowledge-based
 approach for interpreting genome-wide expression profiles. PNAS. 102, 43.
