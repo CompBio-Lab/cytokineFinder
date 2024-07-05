@@ -22,7 +22,7 @@
 #' DOI: https://doi.org/10.1101/060012.
 #'
 #' @param eset Expression Set object containing gene expression data.
-#' @param treatment Optional Response variable
+#' @param design Design matrix generated from create_design()
 #' @param db ligand-receptor database
 #' 
 #' @return GSVA result for set of ligands that are significantly enriched
@@ -34,10 +34,7 @@
 #' @importFrom fgsea fgsea
 #' 
 
-cfgsea <- function(eset, treatment, db){
-  # Initialize design matrix
-  design <- create_design(treatment, obs_id)
-  
+cfgsea <- function(eset, design, db){
   # run DEA
   fit <- eBayes(lmFit(eset, design))
   top <- topTable(fit, coef = 2, n = nrow(fit))

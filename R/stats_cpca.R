@@ -4,7 +4,6 @@
 #' @param design Design matrix generated from create_design()
 #' @param db Ligand-receptor database
 #' 
-#'
 #' @return List of differentially expressed ligands ordered by p-values
 #' @export
 #'
