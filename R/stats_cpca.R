@@ -1,9 +1,9 @@
 #' Calculate top ligands using a PCA approach and use for weights to 
 #'
 #' @param eset Expression Set object containing gene expression data.
-#' @param y 
-#' @param obs_id 
-#' @param db 
+#' @param treatment Optional treatment response variable
+#' @param obs_id Observation ID or sample if looking there are biological replicates
+#' @param db ligand-receptor database
 #'
 #' @return List of differentially expressed ligands ordered by p-values
 #' @export
@@ -15,12 +15,26 @@
 #' @importFrom limma lmFit
 #' @importFrom limma topTable
 
-cpca <- function(eset, y, obs_id, db){
+cpca <- function(eset, design, db){
+  # Check if the design matrix is a data frame or matrix
+  if (!is.data.frame(design) && !is.matrix(design)) {
+    stop("The design argument must be a data frame or matrix.")
+  }
+  
+  # Check if the design matrix has the necessary columns
+  required_columns <- c("treatment", "obs_id")  # Adjust these as needed
+  if (!all(required_columns %in% colnames(design))) {
+    stop("The design matrix must contain the following columns: ", 
+         paste(required_columns, collapse = ", "))
+  }
+  
+  # Run PCA to get the first PC
   pc <- t(sapply(db, function(ligand){
     genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
     prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
   }))
-  design <- create_design(y, obs_id)
+  
+  # run DEA using the design matrix integrated from previous create_design()
   fit <- eBayes(lmFit(pc, design))
   top <- topTable(fit, coef = 2, n = nrow(fit))
   pval <- top$P.Value

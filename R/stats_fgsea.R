@@ -22,9 +22,9 @@
 #' DOI: https://doi.org/10.1101/060012.
 #'
 #' @param eset Expression Set object containing gene expression data.
-#' @param obs_id Observation ID or sample if looking there are biological replicates
+#' @param treatment Optional Response variable
 #' @param db ligand-receptor database
-
+#' @param design 
 #' 
 #' @return GSVA result for set of ligands that are significantly enriched
 #' ordered by p-value
@@ -34,12 +34,16 @@
 #' @importFrom limma topTable
 #' @importFrom fgsea fgsea
 #' 
-cfgsea <- function(eset, design, db){
-  # differential expression analysis
+
+cfgsea <- function(eset, treatment, design, db){
+  # Initialize design matrix
+  design <- create_design(treatment, obs_id)
+  
+  # run DEA
   fit <- eBayes(lmFit(eset, design))
   top <- topTable(fit, coef = 2, n = nrow(fit))
   
-  # fgsea
+  # run fgsea
   stats = top$t
   names(stats) <- rownames(top)
   run_fgsea <- fgsea(pathways = db,
