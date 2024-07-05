@@ -1,8 +1,9 @@
 #' Helper fun to create the design matrix
 #'
 #' @param treatment Treatment response variable
-#' @param obs_id Observation ID or sample if looking there are biological replicates
-#'
+#' @param obs_id Observation ID: some samples may have unique IDs but come from
+#' the same tissue of origin, if that exists, provide a vector of this to make
+#' sure the Expression matrix accounts for this to avoid incorrect DEA input.
 #' @return
 #' @export
 #'
