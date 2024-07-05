@@ -5,6 +5,7 @@
 #' together to compute a value for the ligand or cytokine given a gene set.
 #'
 #' @param eset Expression Set object containing gene expression data.
+#' @param treatment Treatment response variable
 #' @param db ligand-receptor database
 #'
 #' @return A named vector of ligands indicating importance 

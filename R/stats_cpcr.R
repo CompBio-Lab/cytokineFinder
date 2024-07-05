@@ -1,7 +1,7 @@
 #' Title
 #'
 #' @param eset Expression Set object containing gene expression data.
-#' @param y Response variable
+#' @param treatment Treatment response variable
 #' @param db ligand-receptor database
 #'
 #' @return 

@@ -1,9 +1,9 @@
 #' Calculate top ligands using a PCA approach and use for weights to 
 #'
 #' @param eset Expression Set object containing gene expression data.
-#' @param treatment Optional treatment response variable
-#' @param obs_id Observation ID or sample if looking there are biological replicates
-#' @param db ligand-receptor database
+#' @param design Design matrix generated from create_design()
+#' @param db Ligand-receptor database
+#' 
 #'
 #' @return List of differentially expressed ligands ordered by p-values
 #' @export

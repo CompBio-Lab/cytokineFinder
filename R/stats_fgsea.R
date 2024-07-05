@@ -24,7 +24,6 @@
 #' @param eset Expression Set object containing gene expression data.
 #' @param treatment Optional Response variable
 #' @param db ligand-receptor database
-#' @param design 
 #' 
 #' @return GSVA result for set of ligands that are significantly enriched
 #' ordered by p-value
@@ -35,7 +34,7 @@
 #' @importFrom fgsea fgsea
 #' 
 
-cfgsea <- function(eset, treatment, design, db){
+cfgsea <- function(eset, treatment, db){
   # Initialize design matrix
   design <- create_design(treatment, obs_id)
   

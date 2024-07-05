@@ -1,6 +1,6 @@
 #' Helper fun to create the design matrix
 #'
-#' @param treatment Optional treatment response variable
+#' @param treatment Treatment response variable
 #' @param obs_id Observation ID or sample if looking there are biological replicates
 #'
 #' @return
