@@ -7,11 +7,14 @@
 #' @return
 #' @export
 #'
+#' @importFrom GSVA gsvaParam
+#' @importFrom GSVA gsva
+#' 
 #' @examples
 
 cgsva <- function(eset, design, db) {
-  gsvapar <- GSVA::gsvaParam(eset, db, maxDiff = TRUE)
-  gsva_eset <- GSVA::gsva(gsvapar)
+  gsvapar <- gsvaParam(eset, db, maxDiff = TRUE)
+  gsva_eset <- gsva(gsvapar)
   
   # Run DEA
   fit <- limma::eBayes(limma::lmFit(gsva_eset, design))

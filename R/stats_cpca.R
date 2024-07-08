@@ -20,13 +20,6 @@ cpca <- function(eset, design, db){
     stop("The design argument must be a data frame or matrix.")
   }
   
-  # Check if the design matrix has the necessary columns
-  required_columns <- c("treatment", "obs_id")  # Adjust these as needed
-  if (!all(required_columns %in% colnames(design))) {
-    stop("The design matrix must contain the following columns: ", 
-         paste(required_columns, collapse = ", "))
-  }
-  
   # Run PCA to get the first PC
   pc <- t(sapply(db, function(ligand){
     genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])

@@ -6,7 +6,7 @@
 #' @param url The URL of the file to download.
 #' @param destFile Destination file path where the downloaded file should be saved.
 #' @param mode Optional. Mode for downloading the file. Default is NULL (automatic detection).
-#'             Use "wb" for binary files like zip archives.
+#'             Using "wb" addresses a Windows specific issue.
 #' @param extractZip Logical, whether to extract the file if it's a zip archive (default is FALSE).
 #' @param extractDir Optional. Directory where the contents of the zip file should be extracted.
 #'                   If NULL, extracts to the current working directory.
@@ -18,7 +18,7 @@
 #' @examples
 download_from_url <- function(url, 
                               destFile, 
-                              mode = "wb", # windows issue
+                              mode = "wb", 
                               extractZip = FALSE, 
                               extractDir = NULL) {
   # Check if file exists

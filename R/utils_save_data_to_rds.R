@@ -14,10 +14,10 @@
 #' @examples
 #' 
 #' @importFrom GEOquery getGEO
+#' @importFrom Biobase exprs pData featureData
 
 save_to_rds_from_geo <- function(geo_id, dir_path = "data/"){
   tryCatch({
-    geo_data <- getGEO(geo_id, GSEMatrix = TRUE)
     saveRDS(geo_data, paste0(dir_path, geo_id, ".rds"))
     return(geo_data)
   }, error = function(e) {
