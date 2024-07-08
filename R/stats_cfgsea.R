@@ -27,6 +27,7 @@ cfgsea <- function(eset,design, db) {
   # representing each ligand
   length_receptors <- sapply(db, length)
   
+  # Run fgsea
   fgsea_results <- fgsea(pathways = db,
                          stats = stats,
                          minSize = min(length_receptors),
