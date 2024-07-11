@@ -8,27 +8,29 @@
 #' @examples
 #'
 #' @importFrom GEOquery getGEO
+#' @importFrom Biobase pData
+#' @importFrom Biobase exprs
 
 clean_geo_dataset <- function(geo_id) {
   tryCatch({
     geo_data <- getGEO(geo_id, GSEMatrix = TRUE)
-    e1 <- geo_data[[1]]
+    e1 <- geo_data[[paste0(geo_id, "_series_matrix.txt.gz")]]
     
     # Extract phenotype data
-    pheno_data <- pData(e1)
+    metadata <- pData(e1)
     
     # Extract expression data
-    exp_data <- exprs(e1)
+    eset <- exprs(e1)
     
     # Extract annotation data
-    ann_data <- e1@featureData@data
-    ann_data <- ann_data[ann_data$`Gene Symbol` != "", ]
+    annotations <- e1@featureData@data
+    annotations <- annotations[annotations$`Gene Symbol` != "", ]
     
     # Create a list to store all data
     combined_data <- list(
-      phenotype = pheno_data,
-      expression = exp_data,
-      annotation = ann_data
+      metadata = metadata,
+      eset = eset,
+      annotations = annotations
     )
     
     return(combined_data)

@@ -7,6 +7,9 @@
 #' @return
 #' @export
 #'
+#' @importFrom limma lmFit
+#' @importFrom limma eBayes
+#' @importFrom limma topTable
 #' @importFrom GSVA gsvaParam
 #' @importFrom GSVA gsva
 #' 
@@ -17,8 +20,8 @@ cgsva <- function(eset, design, db) {
   gsva_eset <- gsva(gsvapar)
   
   # Run DEA
-  fit <- limma::eBayes(limma::lmFit(gsva_eset, design))
-  top <- limma::topTable(fit, coef = 2, n = nrow(fit))
+  fit <- eBayes(lmFit(gsva_eset, design))
+  top <- topTable(fit, coef = 2, n = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
   return(pval[order(pval)])
