@@ -15,9 +15,10 @@
 #' @examples
 
 cfgsea <- function(eset,design, db) {
+  # generate linear model from limma
   fit <- lmFit(eset, design)
-  ebayes <- eBayes(fit)
-  top <- topTable(ebayes, coef = 2)
+  efit <- eBayes(fit)
+  top <- topTable(efit, coef = 2)
   
   # create named vector of t-stats for each gene
   stats <- top$t

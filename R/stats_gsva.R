@@ -16,7 +16,12 @@
 #' @examples
 
 cgsva <- function(eset, design, db) {
-  gsvapar <- gsvaParam(eset, db, maxDiff = TRUE)
+  length_receptors <- sapply(db, length)
+  
+  gsvapar <- gsvaParam(eset, 
+                       db, 
+                       minSize = min(length_receptors), 
+                       maxDiff = TRUE)
   gsva_eset <- gsva(gsvapar)
   
   # Run DEA
