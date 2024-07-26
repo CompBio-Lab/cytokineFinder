@@ -55,9 +55,10 @@ methods <- c("cfgsea", "cgsva")
 results <- cytokinefinder(eset, design, dbs_all, methods)
 ```
 
-# Visualize the data
+# Visualize the data:
+## First, extract the relevant ligands from the results object
 ```{r}
-results$cfgsea$baderlab
-
+data_ligand <- extract_ligands(benchmark_results = results, ligands = "TNF")
+plot_ligand_summary(data_ligand)
 ```
 
