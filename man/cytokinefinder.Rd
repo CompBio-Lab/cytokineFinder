@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrapper_run_cytokinefinder.R
 \name{cytokinefinder}
 \alias{cytokinefinder}
-\title{Title}
+\title{The wrapper function to run the benchmarking}
 \usage{
 cytokinefinder(eset, design, dbs, methods)
 }
@@ -15,6 +15,10 @@ cytokinefinder(eset, design, dbs, methods)
 
 \item{methods}{}
 }
+\value{
+A large BenchmarkResults object containing a nested list of methods
+and the results
+}
 \description{
-Title
+The wrapper function to run the benchmarking
 }
