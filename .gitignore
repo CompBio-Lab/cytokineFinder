@@ -16,3 +16,4 @@ sif/
 **.xlsx
 **.diff
 **.merge
+inst/doc
