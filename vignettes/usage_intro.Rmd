@@ -1,0 +1,63 @@
+---
+title: "How to use CytokineFindeR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{usage_intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The following is a brief introduction on the usage of `CytokineFindeR`. 
+
+This vignette will outline the following procedures:
+1) Setting up the design matrix for the linear models
+2) Loading in the demo data `golimumab` from `GSE92415` on GEO.
+3) Running the benchmark analysis in parallel using `future`
+4) Data visualization
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Load the R packages
+```{r setup}
+devtools::load_all(".")
+library(tidyverse)
+```
+
+# Set up the design matrix for demo data 
+```{r}
+# pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
+
+# Input treatment: difference between week 0 and week 6
+# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
+
+data(golimumab)
+
+obs_id <- golimumab$metadata$`subject:ch1`
+treatment <- golimumab$metadata$`visit:ch1`
+design <- create_design(treatment, obs_id)
+
+eset <- golimumab$eset
+```
+
+# Call the database, 
+# list out the methods to benchmark, 
+# run `cytokinefinder()`
+# The result should return a nested list of benchmark results
+```{r}
+dbs_all <- cytokineFindeR::dbs_all
+methods <- c("cfgsea", "cgsva")
+
+results <- cytokinefinder(eset, design, dbs_all, methods)
+```
+
+# Visualize the data
+```{r}
+results$cfgsea$baderlab
+
+```
+
