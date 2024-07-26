@@ -41,6 +41,7 @@ cytokinefinder <- function(eset, design, dbs, methods) {
     }, future.seed = TRUE)  # Set future.seed to ensure reproducibility
     
     # Organize results into a named list
+    print(paste("Combining into one BenchmarkResults Object"))
     method_results_named <- setNames(
       lapply(method_results, `[[`, "result"), # extract method results
       sapply(method_results, `[[`, "database") # extract database name

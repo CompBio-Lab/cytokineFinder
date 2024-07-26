@@ -48,6 +48,17 @@ retrieve_geo <- function(geo_id) {
   
 }
 
+#' Title
+#'
+#' @param eset 
+#' @param gene_list_df 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+
 clean_eset <- function(eset, gene_list_df){
   # clean eset against list of probe genes
   # combine probes that bind to multiple genes
