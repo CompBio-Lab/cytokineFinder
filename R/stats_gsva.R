@@ -26,7 +26,7 @@ cgsva <- function(eset, design, db) {
   
   # Run DEA
   fit <- eBayes(lmFit(gsva_eset, design))
-  top <- topTable(fit, coef = 2, n = nrow(fit))
+  top <- topTable(fit, coef = 2, number = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
   return(enframe(pval[order(pval)], name = "pathway", value = "pval"))
