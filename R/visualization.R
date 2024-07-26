@@ -19,13 +19,14 @@ plot_ligand_summary <- function(data) {
   
   # Summarize the data
   summary_data <- data %>%
-    group_by(method, pathway)
+    group_by(method, pathway) %>%
+    mutate(sig = -log10(pval))
   
   # Create the plot
-  ggplot(summary_data, aes(x = reorder(method, pval), y = pval, fill = database)) +
+  ggplot(summary_data, aes(x = reorder(method, sig), y = sig, fill = database)) +
     geom_bar(stat = "identity", position = "dodge") +
     #geom_errorbar(aes(ymin = mean_pval - sd_pval, ymax = mean_pval + sd_pval), width = .2, position = position_dodge(.9)) +
-    ylab("p-value") +
+    ylab("Significance") +
     xlab("Method + Database Annotation") +
     facet_wrap(~pathway, ncol = 1) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
@@ -44,7 +45,7 @@ plot_ligand_summary <- function(data) {
 #' @export
 #' 
 #' @import dplyr
-#' @import map
+#' @import purrr
 #' 
 #' @examples
 
