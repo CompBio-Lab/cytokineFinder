@@ -19,7 +19,12 @@
 #' @importFrom mixOmics selectVar
 
 gsva_plsda <- function(eset, treatment, db){
-  gsvapar <- gsvaParam(eset, db, maxDiff = TRUE)
+  length_receptors <- sapply(db, length)
+  
+  gsvapar <- gsvaParam(eset, 
+                       db, 
+                       minSize = min(length_receptors), 
+                       maxDiff = TRUE)
   gsva_eset <- gsva(gsvapar)
   
   # Use mixomics to fit regression  
