@@ -10,7 +10,7 @@ Optionally, it can extract the contents if the file is a zip archive.}
 download_from_url(
   url,
   destFile,
-  mode = NULL,
+  mode = "wb",
   extractZip = FALSE,
   extractDir = NULL
 )
@@ -21,7 +21,7 @@ download_from_url(
 \item{destFile}{Destination file path where the downloaded file should be saved.}
 
 \item{mode}{Optional. Mode for downloading the file. Default is NULL (automatic detection).
-Use "wb" for binary files like zip archives.}
+Using "wb" addresses a Windows specific issue.}
 
 \item{extractZip}{Logical, whether to extract the file if it's a zip archive (default is FALSE).}
 

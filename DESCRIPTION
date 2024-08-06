@@ -1,12 +1,32 @@
 Package: cytokineFindeR
-Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Jeffrey Tang
-Maintainer: The package maintainer <jeffrey.tang@hli.ubc.ca>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
 LazyData: true
-RoxygenNote: 7.3.1
+Imports: 
+    Biobase,
+    fgsea,
+    future,
+    future.apply,
+    GEOquery,
+    GSVA,
+    limma,
+    mixOmics,
+    tidyverse
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
+

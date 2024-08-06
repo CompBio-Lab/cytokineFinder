@@ -1,5 +1,4 @@
-
-#' Save GEO data to RDS file
+#' Save data to RDS or RDA format
 #'
 #' This function fetches GEO data using the geoQuery package 
 #' and saves it as an RDS
@@ -13,10 +12,12 @@
 #' @export
 #'
 #' @examples
+#' 
+#' @importFrom GEOquery getGEO
+#' @importFrom Biobase exprs pData featureData
 
-save_to_rds <- function(geo_id, dir_path = "data/"){
+save_to_rds_from_geo <- function(geo_id, dir_path = "data/"){
   tryCatch({
-    geo_data <- geoQuery::getGEO(geo_id, GSEMatrix = TRUE)
     saveRDS(geo_data, paste0(dir_path, geo_id, ".rds"))
     return(geo_data)
   }, error = function(e) {
@@ -39,9 +40,9 @@ save_to_rds <- function(geo_id, dir_path = "data/"){
 #'
 #' @examples
 
-save_in_batch <- function(geo_ids, dir_path = "data/"){
+save_rds_in_batch <- function(geo_ids, dir_path = "data/"){
   geo_datasets <- lapply(geo_ids, function(geo_id) {
-    save_to_rds(geo_id, dir_path)
+    save_to_rds_from_geo(geo_id, dir_path)
   })
   names(geo_datasets) <- geo_ids
   return(geo_datasets)

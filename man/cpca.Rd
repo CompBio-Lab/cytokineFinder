@@ -4,16 +4,14 @@
 \alias{cpca}
 \title{Calculate top ligands using a PCA approach and use for weights to}
 \usage{
-cpca(eset, y, obs_id, db)
+cpca(eset, design, db)
 }
 \arguments{
 \item{eset}{Expression Set object containing gene expression data.}
 
-\item{y}{}
+\item{design}{Design matrix generated from create_design()}
 
-\item{obs_id}{}
-
-\item{db}{}
+\item{db}{Ligand-receptor database}
 }
 \value{
 List of differentially expressed ligands ordered by p-values

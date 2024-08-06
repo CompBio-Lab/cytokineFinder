@@ -1,6 +1,5 @@
 .Rproj.user
 .Rhistory
-.RData
 .Ruserdata
 .DS_Store
 **.sif
@@ -8,7 +7,6 @@ sif/
 **.RData
 **.local
 **.config
-data/GSE*
 .env
 .sh_history
 **.rds
@@ -18,3 +16,4 @@ data/GSE*
 **.xlsx
 **.diff
 **.merge
+inst/doc

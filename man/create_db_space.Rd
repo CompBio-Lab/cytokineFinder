@@ -4,10 +4,18 @@
 \alias{create_db_space}
 \title{Title}
 \usage{
-create_db_space(..., file_path)
+create_db_space(
+  ...,
+  filePath = "data/ligand_receptor_db.rda",
+  saveToFile = TRUE
+)
 }
 \arguments{
 \item{...}{}
+
+\item{filePath}{}
+
+\item{saveToFile}{}
 }
 \description{
 Title

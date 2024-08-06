@@ -7,11 +7,11 @@
 cgsva(eset, design, db)
 }
 \arguments{
-\item{eset}{}
+\item{eset}{Expression Set object containing gene expression data.}
 
-\item{design}{}
+\item{design}{Design matrix generated from create_design()}
 
-\item{db}{}
+\item{db}{Ligand-receptor database}
 }
 \description{
 Gene Set Variation Analysis for cytokines (cGSVA)

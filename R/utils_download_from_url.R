@@ -6,7 +6,7 @@
 #' @param url The URL of the file to download.
 #' @param destFile Destination file path where the downloaded file should be saved.
 #' @param mode Optional. Mode for downloading the file. Default is NULL (automatic detection).
-#'             Use "wb" for binary files like zip archives.
+#'             Using "wb" addresses a Windows specific issue.
 #' @param extractZip Logical, whether to extract the file if it's a zip archive (default is FALSE).
 #' @param extractDir Optional. Directory where the contents of the zip file should be extracted.
 #'                   If NULL, extracts to the current working directory.
@@ -18,29 +18,27 @@
 #' @examples
 download_from_url <- function(url, 
                               destFile, 
-                              mode = NULL, 
+                              mode = "wb", 
                               extractZip = FALSE, 
                               extractDir = NULL) {
   # Check if file exists
   if (file.exists(destFile)) { 
     message(paste0("File", destFile, "already exists. Skipping download."))
-  } else {
-    if (is.null(mode)) {
-      # Determine mode if not specified and evaluate if it is a zip file
-      mode <- ifelse(grepl("\\.zip$", url, ignore.case = TRUE), "wb", "auto")
-    }
+  } 
     # Download File
-    utils::download.file(url = url, destfile = destFile, mode = mode)
+    utils::download.file(url = url, destfile = destFile, mode = "wb")
     
     # Extract if requested
-    if (extractZip && grepl("\\.zip$", ignore.case = TRUE)) {
+    if (extractZip) {
       if (is.null(extractDir)) {
-        utils::unzip(destFile, exdir = dirname(destFile))
-      } else {
+        extractDir <- dirname(destFile)
+      }
+      tryCatch({
         utils::unzip(destFile, exdir = extractDir)
+        message("File successfully extracted.")
+      }, error = function(e) {
+        message("Error extracting zip file:", e$message)
+      }) 
       }
     }
-  }
-  
-}
 
