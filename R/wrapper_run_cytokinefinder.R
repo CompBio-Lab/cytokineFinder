@@ -13,7 +13,7 @@
 #' @importFrom future.apply future_lapply future_sapply
 #' @examples
 
-cytokinefinder <- function(eset, design, dbs, methods) { 
+cytokinefinder <- function(eset, design, dbs, methods, treatment = NULL) { 
   # Set up the future plan
   future::plan(future::multicore)  # Set up multicore parallelism
   
@@ -31,8 +31,15 @@ cytokinefinder <- function(eset, design, dbs, methods) {
                   "with database:", 
                   database)
             )  # Debug statement
-      result <- method(eset, design, dbs[[database]])
-      print(paste("Finished processing method:", 
+      
+      # Check if the method requires 'treatment' and pass it accordingly
+      if (!is.null(treatment) && grepl("plsda", method_name)) {
+        result <- method(eset, treatment, dbs[[database]])
+      } else {
+        result <- method(eset, design, dbs[[database]])
+      }
+      
+      message(paste("Finished processing method:", 
                   method_name, 
                   "with database:", 
                   database)
@@ -41,7 +48,7 @@ cytokinefinder <- function(eset, design, dbs, methods) {
     }, future.seed = TRUE)  # Set future.seed to ensure reproducibility
     
     # Organize results into a named list
-    print(paste("Combining into one BenchmarkResults Object"))
+    message(paste("Combining into one BenchmarkResults Object"))
     method_results_named <- setNames(
       lapply(method_results, `[[`, "result"), # extract method results
       sapply(method_results, `[[`, "database") # extract database name

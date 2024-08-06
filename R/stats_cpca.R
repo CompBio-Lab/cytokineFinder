@@ -21,10 +21,15 @@ cpca <- function(eset, design, db){
   }
   
   # Run PCA to get the first PC
-  pc <- t(sapply(db, function(ligand){
-    genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
-    prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
-  }))
+  pc <- sapply(db, function(ligand){
+    tryCatch({
+      genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
+      prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]  
+    }, error = function(e) NA)
+    })
+  # remove 0 variability ligands
+  pc <- pc[sapply(pc, length) > 1] %>% 
+    do.call(rbind, .)
   
   # run DEA using the design matrix integrated from previous create_design()
   fit <- eBayes(lmFit(pc, design))

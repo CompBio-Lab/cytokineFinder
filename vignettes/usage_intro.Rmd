@@ -50,9 +50,9 @@ eset <- golimumab$eset
 # The result should return a nested list of benchmark results
 ```{r}
 dbs_all <- cytokineFindeR::dbs_all
-methods <- c("cfgsea", "cgsva")
+methods <- c("cpca")
 
-results <- cytokinefinder(eset, design, dbs_all, methods)
+results <- cytokinefinder(eset, design, dbs_all, methods, treatment = treatment)
 ```
 
 # Visualize the data:
