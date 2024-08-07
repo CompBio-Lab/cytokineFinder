@@ -20,7 +20,10 @@ Imports:
     GSVA,
     limma,
     mixOmics,
-    tidyverse
+    dplyr,
+    ggplot2,
+    purrr,
+    tibble
 Suggests: 
     knitr,
     rmarkdown,
