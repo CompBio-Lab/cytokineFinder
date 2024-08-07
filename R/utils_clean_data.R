@@ -4,6 +4,7 @@
 #'
 #' @return
 #' @export
+#' @name retrieve_geo
 #'
 #' @examples
 #'
@@ -55,6 +56,7 @@ retrieve_geo <- function(geo_id) {
 #'
 #' @return
 #' @export
+#' @name clean_eset
 #'
 #' @examples
 #' 

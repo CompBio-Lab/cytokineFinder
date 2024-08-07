@@ -1,7 +1,25 @@
+#' Title
+#'
+#' @param eset 
+#' @param dbs 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
 preprocess <- function(eset, dbs = dbs_all) {
   # check NA in data
   ifelse(eset)
-  # check 0 variable ligands from dbs and 0 variable 
+  # create a list of unique receptor genes across dbs
+  unique_receptors <- unique(unlist(dbs_all))
+  
+  eset <- 
+  # 1) assess overlap:
+  # clean up database and check intersect with eset
+  # recursively check empty element remove ligand from database 
+  
+  # 2) check 0 variable ligands from dbs and intersect with eset 
   # Run PCA to get the first PC
   pc <- sapply(db, function(ligand){
     tryCatch({

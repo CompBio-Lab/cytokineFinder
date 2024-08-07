@@ -12,6 +12,7 @@
 #' @importFrom limma topTable
 #' @importFrom GSVA gsvaParam
 #' @importFrom GSVA gsva
+#' @importFrom tibble enframe
 #' 
 #' @examples
 
@@ -29,5 +30,5 @@ cgsva <- function(eset, design, db) {
   top <- topTable(fit, coef = 2, number = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
-  return(enframe(pval[order(pval)], name = "pathway", value = "pval"))
+  return(enframe(pval[order(pval)], name = "ligand", value = "pval"))
 }

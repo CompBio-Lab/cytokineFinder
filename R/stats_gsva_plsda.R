@@ -27,9 +27,13 @@ gsva_plsda <- function(eset, treatment, db){
                        maxDiff = TRUE)
   gsva_eset <- gsva(gsvapar)
   
-  # Use mixomics to fit regression  
-  fit <- plsda(gsva_eset, treatment)
+  # Use mixomics to fit regression
+  # make sure to transpose matrix from pxn to nxp
+  fit <- plsda(t(gsva_eset), treatment)
   coef <- abs(selectVar(fit, comp=1)$value$value.var)
   names(coef) <- rownames(selectVar(fit, comp=1)$value)
-  return(coef[order(coef, decreasing = TRUE)])
+  return(enframe(coef[order(coef, decreasing = TRUE)], 
+                 name = "ligand", 
+                 value = "pval")
+         )
 }

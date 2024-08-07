@@ -13,6 +13,7 @@
 #' @importFrom limma eBayes
 #' @importFrom limma lmFit
 #' @importFrom limma topTable
+#' @importFrom tibble enframe
 
 cpca <- function(eset, design, db){
   # Check if the design matrix is a data frame or matrix
@@ -36,5 +37,5 @@ cpca <- function(eset, design, db){
   top <- topTable(fit, coef = 2, n = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
-  return(pval[order(pval)])
+  return(enframe(pval[order(pval)], name = "ligand", value = "pval"))
 }

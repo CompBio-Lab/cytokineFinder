@@ -4,13 +4,14 @@
 #'
 #' @return
 #' @export
+#' @name plot_ligand_summary
 #' @import dplyr
 #' @import ggplot2
 #' @examples
 
 plot_ligand_summary <- function(data) {
   # Check if the required columns are present in the dataframe
-  required_columns <- c("method", "pathway", "pval", "database")
+  required_columns <- c("method", "ligand", "pval", "database")
   missing_columns <- setdiff(required_columns, colnames(data))
   
   if (length(missing_columns) > 0) {
@@ -19,7 +20,7 @@ plot_ligand_summary <- function(data) {
   
   # Summarize the data
   summary_data <- data %>%
-    group_by(method, pathway) %>%
+    group_by(method, ligand) %>%
     mutate(sig = -log10(pval))
   
   # Create the plot
@@ -28,7 +29,7 @@ plot_ligand_summary <- function(data) {
     #geom_errorbar(aes(ymin = mean_pval - sd_pval, ymax = mean_pval + sd_pval), width = .2, position = position_dodge(.9)) +
     ylab("Significance") +
     xlab("Method + Database Annotation") +
-    facet_wrap(~pathway, ncol = 1) +
+    facet_wrap(~ligand, ncol = 1) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 }
 
@@ -38,19 +39,22 @@ plot_ligand_summary <- function(data) {
 
 #' Helper function to extract specific ligands and merge results
 #'
-#' @param benchmark_results 
-#' @param ligands 
+#' This function extracts specified ligands from a `BenchmarkResults` object 
+#' and merges the results into a single data frame.
 #'
-#' @return
+#' @param benchmark_results a BenchmarkResults object that contains a nested list of results
+#' @param ligands a vector of ligands to extract 
+#'
+#' @return a data frame containing the extracted results for the specified ligands.
 #' @export
-#' 
+#' @name extract_ligands
 #' @import dplyr
 #' @import purrr
 #' 
 #' @examples
+#' Example usage:
+#' # results_df <- extract_ligands(benchmark_results, c("LigandA", "LigandB"))
 
-library(purrr)
-library(dplyr)
 
 # Function to extract specific ligands and merge results
 extract_ligands <- function(benchmark_results, ligands) {
@@ -61,7 +65,7 @@ extract_ligands <- function(benchmark_results, ligands) {
   process_method_db <- function(df, method_name, db_name) {
     # Extract and filter data for the specified ligands
     filtered_results <- df %>%
-      filter(pathway %in% ligands) %>%
+      filter(ligand %in% ligands) %>%
       mutate(database = db_name, method = method_name)
     
     return(filtered_results)
@@ -87,5 +91,3 @@ extract_ligands <- function(benchmark_results, ligands) {
   return(results_df)
 }
 
-# Example usage
-# results_df <- extract_ligands(benchmark_results, c("LigandA", "LigandB"))
