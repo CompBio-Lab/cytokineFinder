@@ -24,8 +24,9 @@ knitr::opts_chunk$set(
 
 # Load the R packages
 ```{r setup}
+require(devtools)
+require(tidyverse)
 devtools::load_all(".")
-library(tidyverse)
 ```
 
 # Set up the design matrix for demo data 
@@ -48,11 +49,22 @@ eset <- golimumab$eset
 # list out the methods to benchmark, 
 # run `cytokinefinder()`
 # The result should return a nested list of benchmark results
-```{r}
+```{r, warning=FALSE}
 dbs_all <- cytokineFindeR::dbs_all
-methods <- c("cpca")
+methods <- c("cfgsea", 
+             "cgsva", 
+             "cpca", 
+             "gsva_plsda", 
+             "cpca_plsda")
 
-results <- cytokinefinder(eset, design, dbs_all, methods, treatment = treatment)
+results <- cytokinefinder(eset, 
+                          design, 
+                          dbs_all, 
+                          methods, 
+                          treatment = treatment
+                          )
+
+
 ```
 
 # Visualize the data:
