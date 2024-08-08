@@ -18,3 +18,5 @@ sif/
 **.merge
 inst/doc
 renv.lock
+/doc/
+/Meta/
