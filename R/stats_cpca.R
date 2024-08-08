@@ -1,4 +1,4 @@
-#' Calculate top ligands using a PCA approach and use for weights to 
+#' Calculate top ligands using a PCA approach from receptor genes given a database 
 #'
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
