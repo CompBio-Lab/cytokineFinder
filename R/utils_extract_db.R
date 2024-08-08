@@ -12,6 +12,7 @@
 #' changes such as TNFA vs TNF.
 #' @param eset 
 #' @param dbs 
+#' @export
 #'
 #' @return A list of lists showing a set of ligand genes where each ligand
 #' contains a list of genes that were subset defined as "receptor" genes

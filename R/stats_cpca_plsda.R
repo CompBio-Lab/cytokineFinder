@@ -8,8 +8,9 @@
 #' @export
 #'
 #' @examples
-
-db = dbs_all$baderlab
+#' # Load the database
+#' # dbs_all <- dbs_all
+#' # cpca_plsda(eset, treatment, dbs_all$baderlab)
 
 cpca_plsda <- function(eset, treatment, db){
   pc <- sapply(db, function(ligand){
