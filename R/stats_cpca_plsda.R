@@ -8,6 +8,9 @@
 #' @export
 #'
 #' @examples
+#' # Load the database
+#' # dbs_all <- dbs_all
+#' # cpca_plsda(eset, treatment, dbs_all$baderlab)
 
 cpca_plsda <- function(eset, treatment, db){
   pc <- sapply(db, function(ligand){
@@ -20,8 +23,11 @@ cpca_plsda <- function(eset, treatment, db){
   pc <- pc[sapply(pc, length) > 1] %>% 
     do.call(rbind, .)
   # fit to plsda
-  fit <- mixOmics::plsda(pcs, treatment)
+  fit <- mixOmics::plsda(t(pc), treatment)
   coef <- abs(mixOmics::selectVar(fit, comp=1)$value$value.var)
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
-  return(coef[order(coef, decreasing = TRUE)])
+  return(enframe(coef[order(coef, decreasing = TRUE)],
+                 name = "ligand",
+                 value = "pval")
+         )
 }

@@ -4,16 +4,20 @@
 \alias{cytokinefinder}
 \title{The wrapper function to run the benchmarking}
 \usage{
-cytokinefinder(eset, design, dbs, methods)
+cytokinefinder(eset, design, dbs, methods, treatment = NULL)
 }
 \arguments{
-\item{eset}{}
+\item{eset}{An expression set (numeric matrix) of genes x samples}
 
-\item{design}{}
+\item{design}{The design matrix for the data set used to generate the model}
 
-\item{dbs}{}
+\item{dbs}{The databases in a list of list format (for package default, use dbs_all)}
 
-\item{methods}{}
+\item{methods}{A vector of methods contained in this package}
+
+\item{treatment}{A vector containing the treatment (specific to the demo
+data set, this is to analyze differentially expressed genes between week 0
+and week 6) with the drug gollimumab on Ulcerative colitis patients)}
 }
 \value{
 A large BenchmarkResults object containing a nested list of methods

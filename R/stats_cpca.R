@@ -4,7 +4,7 @@
 #' @param design Design matrix generated from create_design()
 #' @param db Ligand-receptor database
 #' 
-#' @return List of differentially expressed ligands ordered by p-values
+#' @return a data frame of differentially expressed ligands ordered by p-values
 #' @export
 #'
 #' @examples
@@ -13,6 +13,7 @@
 #' @importFrom limma eBayes
 #' @importFrom limma lmFit
 #' @importFrom limma topTable
+#' @importFrom tibble enframe
 
 cpca <- function(eset, design, db){
   # Check if the design matrix is a data frame or matrix
@@ -33,8 +34,8 @@ cpca <- function(eset, design, db){
   
   # run DEA using the design matrix integrated from previous create_design()
   fit <- eBayes(lmFit(pc, design))
-  top <- topTable(fit, coef = 2, n = nrow(fit))
+  top <- topTable(fit, coef = 2, number = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
-  return(pval[order(pval)])
+  return(enframe(pval[order(pval)], name = "ligand", value = "pval"))
 }

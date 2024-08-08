@@ -13,6 +13,7 @@ RoxygenNote: 7.3.2
 LazyData: true
 Imports: 
     Biobase,
+    dplyr,
     fgsea,
     future,
     future.apply,
@@ -20,6 +21,9 @@ Imports:
     GSVA,
     limma,
     mixOmics,
+    ggplot2,
+    purrr,
+    tibble,
     tidyverse
 Suggests: 
     knitr,

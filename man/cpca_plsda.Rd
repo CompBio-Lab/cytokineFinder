@@ -16,3 +16,8 @@ cpca_plsda(eset, treatment, db)
 \description{
 Title
 }
+\examples{
+# Load the database
+# dbs_all <- dbs_all
+# cpca_plsda(eset, treatment, dbs_all$baderlab)
+}

@@ -1,9 +1,12 @@
 #' The wrapper function to run the benchmarking
 #'
-#' @param eset 
-#' @param design 
-#' @param dbs 
-#' @param methods
+#' @param eset An expression set (numeric matrix) of genes x samples
+#' @param design The design matrix for the data set used to generate the model
+#' @param dbs The databases in a list of list format (for package default, use dbs_all)
+#' @param methods A vector of methods contained in this package
+#' @param treatment A vector containing the treatment (specific to the demo 
+#' data set, this is to analyze differentially expressed genes between week 0 
+#' and week 6) with the drug gollimumab on Ulcerative colitis patients)
 #'
 #' @return A large BenchmarkResults object containing a nested list of methods
 #' and the results 
