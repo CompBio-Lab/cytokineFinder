@@ -24,9 +24,8 @@ knitr::opts_chunk$set(
 
 # Load the R packages
 ```{r setup}
-require(devtools)
-require(tidyverse)
-devtools::load_all(".")
+library(cytokineFindeR)
+library(tidyverse)
 ```
 
 # Set up the design matrix for demo data 
@@ -63,8 +62,6 @@ results <- cytokinefinder(eset,
                           methods, 
                           treatment = treatment
                           )
-
-
 ```
 
 # Visualize the data:

@@ -2,15 +2,17 @@
 % Please edit documentation in R/utils_clean_data.R
 \name{clean_eset}
 \alias{clean_eset}
-\title{Title}
+\title{Given an expression set, make sure that data is
+cleaned by gene name using a provided gene list data frame}
 \usage{
 clean_eset(eset, gene_list_df)
 }
 \arguments{
-\item{eset}{}
+\item{eset}{Expression Set as a numeric matrix}
 
 \item{gene_list_df}{}
 }
 \description{
-Title
+Given an expression set, make sure that data is
+cleaned by gene name using a provided gene list data frame
 }

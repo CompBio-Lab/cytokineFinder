@@ -14,7 +14,7 @@ cpca(eset, design, db)
 \item{db}{Ligand-receptor database}
 }
 \value{
-List of differentially expressed ligands ordered by p-values
+a data frame of differentially expressed ligands ordered by p-values
 }
 \description{
 Calculate top ligands using a PCA approach and use for weights to
