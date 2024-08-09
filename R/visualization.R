@@ -52,9 +52,13 @@ plot_ligand_summary <- function(data) {
 #' @import purrr
 #' 
 #' @examples
-#' Example usage:
-#' # results_df <- extract_ligands(benchmark_results, c("LigandA", "LigandB"))
-
+#' # Example usage requires running cytokinefinder() first, 
+#' for details check ?cytokinefinder():
+#' \dontrun{
+#' results_df <- extract_ligands(
+#'     benchmark_results = results, 
+#'     ligands = c("LigandA", "LigandB"))
+#' }
 
 # Function to extract specific ligands and merge results
 extract_ligands <- function(benchmark_results, ligands) {
