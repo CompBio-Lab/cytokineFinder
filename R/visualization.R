@@ -53,7 +53,7 @@ plot_ligand_summary <- function(data) {
 #' 
 #' @examples
 #' # Example usage requires running cytokinefinder() first, 
-#' for details check ?cytokinefinder():
+#' # for details check ?cytokinefinder():
 #' \dontrun{
 #' results_df <- extract_ligands(
 #'     benchmark_results = results, 
