@@ -11,9 +11,9 @@ The following is a brief introduction on the usage of `CytokineFindeR`.
 
 This vignette will outline the following procedures:
 1) Setting up the design matrix for the linear models
-2) Loading in the demo data `golimumab` from `GSE92415` on GEO.
+2) Loading in the demo data `golimumab` from `GSE92415` on GEO. The data set is subset specifically for ulcerative colitis cell isolates looking at the gene expression difference for golimumab, which is an anti-TNF drug, between week 0 and week 6. 
 3) Running the benchmark analysis in parallel using `future`
-4) Data visualization
+4) Data visualization which shows p-values 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -67,7 +67,10 @@ results <- cytokinefinder(eset,
 # Visualize the data:
 ## First, extract the relevant ligands from the results object
 ```{r}
-data_ligand <- extract_ligands(benchmark_results = results, ligands = "TNF")
+data_ligand <- extract_ligands(
+  benchmark_results = results, 
+  ligands = "TNF"
+  )
 plot_ligand_summary(data_ligand)
 ```
 
