@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats_cpca.R
 \name{cpca}
 \alias{cpca}
-\title{Calculate top ligands using a PCA approach and use for weights to}
+\title{Calculate top ligands using a PCA approach from receptor genes given a database}
 \usage{
 cpca(eset, design, db)
 }
@@ -17,5 +17,5 @@ cpca(eset, design, db)
 a data frame of differentially expressed ligands ordered by p-values
 }
 \description{
-Calculate top ligands using a PCA approach and use for weights to
+Calculate top ligands using a PCA approach from receptor genes given a database
 }

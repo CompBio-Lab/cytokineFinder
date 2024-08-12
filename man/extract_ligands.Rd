@@ -19,6 +19,11 @@ This function extracts specified ligands from a \code{BenchmarkResults} object
 and merges the results into a single data frame.
 }
 \examples{
-Example usage:
-# results_df <- extract_ligands(benchmark_results, c("LigandA", "LigandB"))
+# Example usage requires running cytokinefinder() first, 
+for details check ?cytokinefinder():
+\dontrun{
+results_df <- extract_ligands(
+    benchmark_results = results, 
+    ligands = c("LigandA", "LigandB"))
+}
 }
