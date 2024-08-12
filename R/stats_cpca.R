@@ -22,7 +22,7 @@ cpca <- function(eset, design, db){
   }
   
   # Run PCA to get the first PC
-  pc <- sapply(db, function(ligand){
+  pc <- lapply(db, function(ligand){
     tryCatch({
       genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
       prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]  
