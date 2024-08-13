@@ -35,6 +35,5 @@ cfgsea <- function(eset,design, db) {
                          maxSize = max(length_receptors)
                          )
   fgsea_results <- dplyr::rename(fgsea_results, ligand = pathway)
-
   return(fgsea_results)
 }
