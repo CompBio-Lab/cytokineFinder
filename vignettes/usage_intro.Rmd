@@ -44,21 +44,40 @@ design <- create_design(treatment, obs_id)
 eset <- golimumab$eset
 ```
 
+# Preprocess databases' receptor gene lists against the genes in the expression set of the study
+# Removes ligands when no receptor genes matching the eset
+```{r}
+# load the default databases list of lists
+dbs <- cytokineFindeR::dbs_all
+
+# filter eset as well
+preprocessed_list <- preprocess_eset(eset, dbs)
+
+# Name variables for the preprocessed eset in the preprocessed_list
+eset_f <- preprocessed_list$eset_f
+dbs_f <- preprocessed_list$dbs_f
+```
+
+# Number of ligands removed:
+```{r}
+# baderlab: 17, nichenet: 14, fantom5: 4, citedb: 4, all_dbs: 20
+dim(eset_f); sapply(dbs,length)-sapply(dbs_f, length)
+```
+
 # Call the database, 
 # list out the methods to benchmark, 
 # run `cytokinefinder()`
 # The result should return a nested list of benchmark results
 ```{r, warning=FALSE}
-dbs_all <- cytokineFindeR::dbs_all
 methods <- c("cfgsea", 
              "cgsva", 
              "cpca", 
              "gsva_plsda", 
              "cpca_plsda")
 
-results <- cytokinefinder(eset, 
+results <- cytokinefinder(eset_f, 
                           design, 
-                          dbs_all, 
+                          dbs_f, 
                           methods, 
                           treatment = treatment
                           )

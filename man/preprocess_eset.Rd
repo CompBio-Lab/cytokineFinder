@@ -4,7 +4,7 @@
 \alias{preprocess_eset}
 \title{Preprocess the eset}
 \usage{
-preprocess_eset(eset, db)
+preprocess_eset(eset, dbs)
 }
 \arguments{
 \item{eset}{}
