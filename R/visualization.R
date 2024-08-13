@@ -11,7 +11,7 @@
 
 plot_ligand_summary <- function(data) {
   # Check if the required columns are present in the dataframe
-  required_columns <- c("method", "ligand", "pval", "database")
+  required_columns <- c("method", "ligand", "pval", "database", "rank")
   missing_columns <- setdiff(required_columns, colnames(data))
   
   if (length(missing_columns) > 0) {
@@ -20,17 +20,20 @@ plot_ligand_summary <- function(data) {
   
   # Summarize the data
   summary_data <- data %>%
-    group_by(method, ligand) %>%
-    mutate(sig = -log10(pval))
+    group_by(method, ligand) #%>%
+    #mutate(sig = -log10(pval))
   
   # Create the plot
-  ggplot(summary_data, aes(x = reorder(method, sig), y = sig, fill = database)) +
+  ggplot(summary_data, aes(x = reorder(method, rank), y = rank, fill = database)) +
     geom_bar(stat = "identity", position = "dodge") +
     #geom_errorbar(aes(ymin = mean_pval - sd_pval, ymax = mean_pval + sd_pval), width = .2, position = position_dodge(.9)) +
-    ylab("Significance") +
+    ylab("Percentile Rank") +
     xlab("Method + Database Annotation") +
     facet_wrap(~ligand, ncol = 1) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+          panel.grid.major = element_blank(),  # Remove major grid lines
+          panel.grid.minor = element_blank())
 }
 
 # Example usage:
@@ -68,11 +71,15 @@ extract_ligands <- function(benchmark_results, ligands) {
   # Define a function to process each method and database
   process_method_db <- function(df, method_name, db_name) {
     # Extract and filter data for the specified ligands
-    filtered_results <- df %>%
-      filter(ligand %in% ligands) %>%
-      mutate(database = db_name, method = method_name)
+    reindex_rank_order <- df %>%
+      # add column and populate value with method and database
+      mutate(database = db_name, method = method_name) %>%
+      # reorder by lowest p-value 
+      arrange(pval) %>%
+      mutate(rank = 100*(1 - (row_number()/n()))) %>%
+      filter(ligand %in% ligands)
     
-    return(filtered_results)
+    return(reindex_rank_order)
   }
   
   # Use map_dfr to iterate over methods and databases
@@ -94,4 +101,3 @@ extract_ligands <- function(benchmark_results, ligands) {
   
   return(results_df)
 }
-

@@ -19,8 +19,8 @@ preprocess_eset <- function(eset, dbs) {
   unique_receptors <- unique(unlist(filtered_dbs_zeroVariance))
   filtered_eset <- eset[intersect(rownames(eset), unique_receptors),]
 
-  return(list(filtered_eset, 
-              filtered_dbs_zeroVariance))
+  return(list(eset_f = filtered_eset, 
+              dbs_f = filtered_dbs_zeroVariance))
 }
 
 #' Filter database and extract ligands-receptors pairs that match the eset data
