@@ -4,7 +4,7 @@
 \alias{create_design}
 \title{Helper fun to create the design matrix}
 \usage{
-create_design(treatment, obs_id = NULL)
+create_design(treatment, obs_id = NULL, eset = NULL)
 }
 \arguments{
 \item{treatment}{Treatment response variable}
@@ -12,6 +12,9 @@ create_design(treatment, obs_id = NULL)
 \item{obs_id}{Observation ID: some samples may have unique IDs but come from
 the same tissue of origin, if that exists, provide a vector of this to make
 sure the Expression matrix accounts for this to avoid incorrect DEA input.}
+}
+\value{
+Either a design matrix or a design list with components
 }
 \description{
 Helper fun to create the design matrix

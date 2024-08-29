@@ -4,7 +4,7 @@
 \alias{cgsva}
 \title{Gene Set Variation Analysis for cytokines (cGSVA)}
 \usage{
-cgsva(eset, design, db)
+cgsva(eset, design, db, obs_id = NULL, correlation = NULL)
 }
 \arguments{
 \item{eset}{Expression Set object containing gene expression data.}
@@ -12,6 +12,12 @@ cgsva(eset, design, db)
 \item{design}{Design matrix generated from create_design()}
 
 \item{db}{Ligand-receptor database}
+
+\item{obs_id}{}
+
+\item{correlation}{}
+
+\item{dupCor}{}
 }
 \description{
 Gene Set Variation Analysis for cytokines (cGSVA)

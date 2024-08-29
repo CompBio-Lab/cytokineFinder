@@ -4,7 +4,7 @@
 \alias{cpca}
 \title{Calculate top ligands using a PCA approach from receptor genes given a database}
 \usage{
-cpca(eset, design, db)
+cpca(eset, design, db, obs_id = NULL, correlation = NULL)
 }
 \arguments{
 \item{eset}{Expression Set object containing gene expression data.}
