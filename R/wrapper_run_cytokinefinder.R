@@ -7,6 +7,9 @@
 #' @param treatment A vector containing the treatment (specific to the demo 
 #' data set, this is to analyze differentially expressed genes between week 0 
 #' and week 6) with the drug gollimumab on Ulcerative colitis patients)
+#' @param dupCor A logical TRUE/FALSE to determine whether or not . Default is set to FALSE.
+#' @param obs_id A vector of sample IDs
+#' @param correlation the average estimated inter-duplicate correlation for  
 #'
 #' @return A large BenchmarkResults object containing a nested list of methods
 #' and the results 
@@ -16,7 +19,8 @@
 #' @importFrom future.apply future_lapply future_sapply
 #' @examples
 
-cytokinefinder <- function(eset, design, dbs, methods, treatment = NULL) { 
+cytokinefinder <- function(eset, design, dbs, methods, 
+                           treatment = NULL, obs_id = NULL, correlation = NULL) { 
   # Set up the future plan
   future::plan(future::multicore)  # Set up multicore parallelism
   
@@ -29,17 +33,27 @@ cytokinefinder <- function(eset, design, dbs, methods, treatment = NULL) {
     
     # Parallel execution for the current method
     method_results <- future_lapply(names(dbs), function(database) {
-      print(paste("Processing method:", 
+      message(paste("Processing method:", 
                   method_name, 
                   "with database:", 
                   database)
             )  # Debug statement
       
-      # Check if the method requires 'treatment' and pass it accordingly
-      if (!is.null(treatment) && grepl("plsda", method_name)) {
+      # Check if the method is PLSDA-based:
+      if (grepl("plsda", method_name)) {
+        # Run the plsda method
         result <- method(eset, treatment, dbs[[database]])
       } else {
-        result <- method(eset, design, dbs[[database]])
+        # Run non-PLSDA method
+        ## Check if it is a paired experiment by checking obs_id
+        if (!is.null(obs_id)) {
+          result <- method(eset, design, 
+                           dbs[[database]], 
+                           obs_id = obs_id,
+                           correlation = correlation)
+        } else{
+          result <- method(eset, design, dbs[[database]])
+          }
       }
       
       message(paste("Finished processing method:", 

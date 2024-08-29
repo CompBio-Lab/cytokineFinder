@@ -11,7 +11,7 @@
 
 plot_ligand_summary <- function(data) {
   # Check if the required columns are present in the dataframe
-  required_columns <- c("method", "ligand", "pval", "database", "rank")
+  required_columns <- c("method", "ligand", "database", "rank")
   missing_columns <- setdiff(required_columns, colnames(data))
   
   if (length(missing_columns) > 0) {
