@@ -28,18 +28,12 @@ library(cytokineFindeR)
 library(tidyverse)
 ```
 
-# Set up the design matrix for demo data 
+# Pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
 ```{r}
-# pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
-
-# Input treatment: difference between week 0 and week 6
-# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
-
 data(golimumab)
 
 obs_id <- golimumab$metadata$`subject:ch1`
 treatment <- golimumab$metadata$`visit:ch1`
-design <- create_design(treatment, obs_id)
 
 eset <- golimumab$eset
 ```
@@ -64,6 +58,16 @@ dbs_f <- preprocessed_list$dbs_f
 dim(eset_f); sapply(dbs,length)-sapply(dbs_f, length)
 ```
 
+# Set up the design matrix for demo data 
+```{r}
+# Input treatment: difference between week 0 and week 6
+# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
+
+design <- create_design(treatment, obs_id, eset_f)
+design_mat <- design$design
+dupcor <- design$dupcor
+```
+
 # Call the database, 
 # list out the methods to benchmark, 
 # run `cytokinefinder()`
@@ -76,12 +80,15 @@ methods <- c("cfgsea",
              "cpca_plsda")
 
 results <- cytokinefinder(eset_f, 
-                          design, 
+                          design_mat, 
                           dbs_f, 
                           methods, 
-                          treatment = treatment
+                          treatment = treatment,
+                          obs_id = obs_id,
+                          correlation = dupcor$consensus
                           )
 ```
+
 
 # Visualize the data:
 ## First, extract the relevant ligands from the results object
@@ -92,4 +99,5 @@ data_ligand <- extract_ligands(
   )
 plot_ligand_summary(data_ligand)
 ```
+
 
