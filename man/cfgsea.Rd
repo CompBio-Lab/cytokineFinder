@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats_cfgsea.R
 \name{cfgsea}
 \alias{cfgsea}
-\title{Title}
+\title{Gene Set Enrichment Analysis}
 \usage{
 cfgsea(eset, design, db, obs_id = NULL, correlation = NULL)
 }
@@ -17,5 +17,5 @@ cfgsea(eset, design, db, obs_id = NULL, correlation = NULL)
 a table with GSEA results. Each row corresponds to a ligand
 }
 \description{
-Title
+Gene Set Enrichment Analysis
 }
