@@ -3,6 +3,9 @@
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
 #' @param db Ligand-receptor database
+#' @param dupCor 
+#' @param obs_id 
+#' @param correlation 
 #'
 #' @return
 #' @export
@@ -16,7 +19,9 @@
 #' 
 #' @examples
 
-cgsva <- function(eset, design, db) {
+cgsva <- function(eset, design, db, 
+                  obs_id = NULL, correlation = NULL) {
+    
   length_receptors <- sapply(db, length)
   
   gsvapar <- gsvaParam(eset, 
@@ -26,7 +31,18 @@ cgsva <- function(eset, design, db) {
   gsva_eset <- gsva(gsvapar)
   
   # Run DEA
+  # First check if experiment samples are paired
+  if(!is.null(obs_id)) {
+  fit <- eBayes(lmFit(gsva_eset, 
+                      design, 
+                      block = obs_id, 
+                      correlation = correlation))
+  message("fitting model with paired samples.")
+  } else {
   fit <- eBayes(lmFit(gsva_eset, design))
+  message("fitting model without paired sample consideration.")
+  }
+  # Get top table
   top <- topTable(fit, coef = 2, number = nrow(fit))
   pval <- top$P.Value
   names(pval) <- rownames(top)

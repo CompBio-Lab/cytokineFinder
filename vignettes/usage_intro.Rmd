@@ -28,20 +28,44 @@ library(cytokineFindeR)
 library(tidyverse)
 ```
 
-# Set up the design matrix for demo data 
+# Pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
 ```{r}
-# pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
-
-# Input treatment: difference between week 0 and week 6
-# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
-
 data(golimumab)
 
 obs_id <- golimumab$metadata$`subject:ch1`
 treatment <- golimumab$metadata$`visit:ch1`
-design <- create_design(treatment, obs_id)
 
 eset <- golimumab$eset
+```
+
+# Preprocess databases' receptor gene lists against the genes in the expression set of the study
+# Removes ligands when no receptor genes matching the eset
+```{r}
+# load the default databases list of lists
+dbs <- cytokineFindeR::dbs_all
+
+# filter eset as well
+preprocessed_list <- preprocess_eset(eset, dbs)
+
+# Name variables for the preprocessed eset in the preprocessed_list
+eset_f <- preprocessed_list$eset_f
+dbs_f <- preprocessed_list$dbs_f
+```
+
+# Number of ligands removed:
+```{r}
+# baderlab: 17, nichenet: 14, fantom5: 4, citedb: 4, all_dbs: 20
+dim(eset_f); sapply(dbs,length)-sapply(dbs_f, length)
+```
+
+# Set up the design matrix for demo data 
+```{r}
+# Input treatment: difference between week 0 and week 6
+# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
+
+design <- create_design(treatment, obs_id, eset_f)
+design_mat <- design$design
+dupcor <- design$dupcor
 ```
 
 # Call the database, 
@@ -49,20 +73,22 @@ eset <- golimumab$eset
 # run `cytokinefinder()`
 # The result should return a nested list of benchmark results
 ```{r, warning=FALSE}
-dbs_all <- cytokineFindeR::dbs_all
 methods <- c("cfgsea", 
              "cgsva", 
              "cpca", 
              "gsva_plsda", 
              "cpca_plsda")
 
-results <- cytokinefinder(eset, 
-                          design, 
-                          dbs_all, 
+results <- cytokinefinder(eset_f, 
+                          design_mat, 
+                          dbs_f, 
                           methods, 
-                          treatment = treatment
+                          treatment = treatment,
+                          obs_id = obs_id,
+                          correlation = dupcor$consensus
                           )
 ```
+
 
 # Visualize the data:
 ## First, extract the relevant ligands from the results object
@@ -73,4 +99,5 @@ data_ligand <- extract_ligands(
   )
 plot_ligand_summary(data_ligand)
 ```
+
 

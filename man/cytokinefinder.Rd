@@ -4,7 +4,15 @@
 \alias{cytokinefinder}
 \title{The wrapper function to run the benchmarking}
 \usage{
-cytokinefinder(eset, design, dbs, methods, treatment = NULL)
+cytokinefinder(
+  eset,
+  design,
+  dbs,
+  methods,
+  treatment = NULL,
+  obs_id = NULL,
+  correlation = NULL
+)
 }
 \arguments{
 \item{eset}{An expression set (numeric matrix) of genes x samples}
@@ -18,6 +26,12 @@ cytokinefinder(eset, design, dbs, methods, treatment = NULL)
 \item{treatment}{A vector containing the treatment (specific to the demo
 data set, this is to analyze differentially expressed genes between week 0
 and week 6) with the drug gollimumab on Ulcerative colitis patients)}
+
+\item{obs_id}{A vector of sample IDs}
+
+\item{correlation}{the average estimated inter-duplicate correlation for}
+
+\item{dupCor}{A logical TRUE/FALSE to determine whether or not . Default is set to FALSE.}
 }
 \value{
 A large BenchmarkResults object containing a nested list of methods

@@ -1,4 +1,4 @@
-#' Title
+#' Gene Set Enrichment Analysis
 #'
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
@@ -14,10 +14,19 @@
 #' 
 #' @examples
 
-cfgsea <- function(eset,design, db) {
-  # generate linear model from limma
-  fit <- lmFit(eset, design)
+cfgsea <- function(eset, design, db, 
+                   obs_id = NULL, correlation = NULL) {
+  # generate linear model from limma for DEA
+  # First check if experiment samples are paired
+  if (!is.null(obs_id)) {
+    fit <- lmFit(eset, design, block = obs_id, correlation = correlation)
+    message("fitting model with paired samples.")
+  } else {
+    fit <- lmFit(eset, design) 
+    message("fitting model without paired sample consideration.")
+  }
   efit <- eBayes(fit)
+  # get topTable
   top <- topTable(efit, coef = 2, number = nrow(efit))
   
   # create named vector of t-stats for each gene

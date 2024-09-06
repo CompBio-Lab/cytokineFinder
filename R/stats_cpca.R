@@ -15,14 +15,15 @@
 #' @importFrom limma topTable
 #' @importFrom tibble enframe
 
-cpca <- function(eset, design, db){
+cpca <- function(eset, design, db, 
+                 obs_id = NULL, correlation = NULL) {
   # Check if the design matrix is a data frame or matrix
   if (!is.data.frame(design) && !is.matrix(design)) {
     stop("The design argument must be a data frame or matrix.")
   }
   
   # Run PCA to get the first PC
-  pc <- sapply(db, function(ligand){
+  pc <- lapply(db, function(ligand){
     tryCatch({
       genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
       prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]  
@@ -33,8 +34,14 @@ cpca <- function(eset, design, db){
     do.call(rbind, .)
   
   # run DEA using the design matrix integrated from previous create_design()
-  fit <- eBayes(lmFit(pc, design))
-  top <- topTable(fit, coef = 2, number = nrow(fit))
+  # Check if paired experiment
+  if (!is.null(obs_id)) {
+    fit <- lmFit(pc, design, block = obs_id, correlation = correlation)
+  } else {
+    fit <- lmFit(pc, design)
+  }
+  efit <- eBayes(fit)
+  top <- topTable(efit, coef = 2, number = nrow(efit))
   pval <- top$P.Value
   names(pval) <- rownames(top)
   return(enframe(pval[order(pval)], name = "ligand", value = "pval"))

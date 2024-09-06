@@ -4,7 +4,7 @@
 \alias{cfgsea}
 \title{Title}
 \usage{
-cfgsea(eset, design, db)
+cfgsea(eset, design, db, obs_id = NULL, correlation = NULL)
 }
 \arguments{
 \item{eset}{Expression Set object containing gene expression data.}
