@@ -33,7 +33,10 @@ cgsva <- function(eset, design, db,
   # Run DEA
   # First check if experiment samples are paired
   if(!is.null(obs_id)) {
-  fit <- eBayes(lmFit(gsva_eset, design, block = obs_id, correlation = correlation))
+  fit <- eBayes(lmFit(gsva_eset, 
+                      design, 
+                      block = obs_id, 
+                      correlation = correlation))
   message("fitting model with paired samples.")
   } else {
   fit <- eBayes(lmFit(gsva_eset, design))

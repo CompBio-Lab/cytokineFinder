@@ -1,4 +1,4 @@
-#' Title
+#' Gene Set Enrichment Analysis
 #'
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
