@@ -12,7 +12,7 @@
 #' # dbs_all <- dbs_all
 #' # cpca_plsda(eset, treatment, dbs_all$baderlab)
 
-cpca_plsda <- function(eset, treatment, db){
+pca_plsda <- function(eset, treatment, db){
   pc <- lapply(db, function(ligand){
     tryCatch({
       genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])

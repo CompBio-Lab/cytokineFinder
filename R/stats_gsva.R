@@ -19,8 +19,9 @@
 #' 
 #' @examples
 
-cgsva <- function(eset, design, db, 
-                  obs_id = NULL, correlation = NULL) {
+gsva_limma <- function(eset, design, 
+                       db, obs_id = NULL, 
+                       correlation = NULL) {
     
   length_receptors <- sapply(db, length)
   
