@@ -15,7 +15,7 @@
 #' @importFrom limma topTable
 #' @importFrom tibble enframe
 
-cpca <- function(eset, design, db, 
+pca_limma <- function(eset, design, db, 
                  obs_id = NULL, correlation = NULL) {
   # Check if the design matrix is a data frame or matrix
   if (!is.data.frame(design) && !is.matrix(design)) {

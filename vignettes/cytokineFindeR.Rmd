@@ -1,8 +1,9 @@
 ---
 title: "How to use CytokineFindeR"
+author: "Jeffrey Tang"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{usage_intro}
+  %\VignetteIndexEntry{cytokineFindeR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -74,8 +75,8 @@ dupcor <- design$dupcor
 # The result should return a nested list of benchmark results
 ```{r, warning=FALSE}
 methods <- c("cfgsea", 
-             "cgsva", 
-             "cpca", 
+             "gsva_limma", 
+             "pca_limma", 
              "gsva_plsda", 
              "cpca_plsda")
 
