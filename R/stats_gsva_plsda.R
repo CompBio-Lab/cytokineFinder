@@ -34,6 +34,6 @@ gsva_plsda <- function(eset, treatment, db){
   names(coef) <- rownames(selectVar(fit, comp=1)$value)
   return(enframe(coef[order(coef, decreasing = TRUE)], 
                  name = "ligand", 
-                 value = "pval")
+                 value = "coef")
          )
 }

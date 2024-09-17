@@ -28,6 +28,6 @@ pca_plsda <- function(eset, treatment, db){
   names(coef) <- rownames(mixOmics::selectVar(fit, comp=1)$value)
   return(enframe(coef[order(coef, decreasing = TRUE)],
                  name = "ligand",
-                 value = "pval")
+                 value = "coef")
          )
 }
