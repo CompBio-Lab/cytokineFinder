@@ -1,4 +1,4 @@
-#' Title
+#' Perform PCA and fit a multivariate regression to measure ligand activity
 #'
 #' @param eset Expression Set object containing gene expression data.
 #' @param treatment Treatment response variable
