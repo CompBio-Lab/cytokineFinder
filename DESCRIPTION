@@ -1,5 +1,5 @@
 Package: cytokineFindeR
-Title: What the Package Does (One Line, Title Case)
+Title: Measure ligands of interest (cytokines) across different methods and databases
 Version: 0.0.0.9000
 Authors@R: 
     person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
