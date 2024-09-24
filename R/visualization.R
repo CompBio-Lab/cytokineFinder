@@ -8,6 +8,11 @@
 #' @import dplyr
 #' @import ggplot2
 #' @examples
+#' #Example usage:
+#' #Assuming 'res' is the output from extract_ligand
+#' \dontrun{
+#' plot_ligand_summary(res)
+#' }
 
 plot_ligand_summary <- function(data) {
   # Check if the required columns are present in the dataframe

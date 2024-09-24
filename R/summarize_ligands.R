@@ -1,8 +1,4 @@
-# Example usage:
-# Assuming 'res' is the output from extract_ligand
-# plot_ligand_summary(res)
-
-#' Helper function to extract specific ligands and merge results
+#' extract specific ligands and merge results
 #'
 #' This function extracts specified ligands from a `BenchmarkResults` object 
 #' and merges the results into a single data frame.
@@ -46,8 +42,11 @@ extract_ligands <- function(benchmark_results, ligands) {
       )
     }
   )
+  # Look at only the ligands of interest
+  summary_df <- summarize_df(results_df) %>%
+    filter(ligand %in% ligands)
   
-  return(results_df)
+  return(summary_df)
 }
 
 #' Define a function to process each method and database
@@ -58,18 +57,75 @@ extract_ligands <- function(benchmark_results, ligands) {
 #'
 #' @return
 #' @export
-#'
+#' @import dplyr
 #' @examples
 
 process_method_db <- function(df, method_name, db_name) {
+  # Determine if the dataframe contains 'pval' or 'coef'
+  if ("pval" %in% colnames(df)) {
+    metric_col <- "pval"
+  } else if ("coef" %in% colnames(df)) {
+    metric_col <- "coef"
+  } else {
+    stop("Data frame must contain either 'pval' or 'coef' column.")
+  }
   # Extract and filter data for the specified ligands
   reindex_rank_order <- df %>%
     # add column and populate value with method and database
-    mutate(database = db_name, method = method_name) %>%
-    # reorder by lowest p-value 
-    arrange(pval) %>%
-    mutate(rank = 100*(1 - (row_number()/n()))) %>%
-    filter(ligand %in% ligands)
+    mutate(database = db_name, method = method_name) %>% 
+    # Dynamically sort by metric_col
+    arrange(if (metric_col == "pval") {
+      pval
+      } else {
+        desc(coef)
+      }) %>%
+    mutate(rank = 100*(1 - (row_number()/n()))) 
   
   return(reindex_rank_order)
+}
+
+#' Primary helper function to create the summary DataFrame
+#'
+#' @param results_df 
+#'
+#' @return
+#' @export
+#' @import dplyr
+#' @import tidyr
+#' @examples
+
+summarize_df <- function(results_df) {
+  # Reshape both p-values and coefficients using the helper function
+  pval_summary <- reshape_metric(results_df, "pval", "pval")
+  coef_summary <- reshape_metric(results_df, "coef", "coef")
+  
+  # Combine both summaries into one final DataFrame
+  final_summary_df <- bind_rows(pval_summary, coef_summary) %>%
+    arrange(method, type, rank)  # Sort if needed
+  
+  return(final_summary_df)
+}
+
+#' Secondary helper function to reshape a specific metric into the desired format
+#'
+#' @param df 
+#' @param metric 
+#' @param type 
+#'
+#' @return
+#' @export
+#' 
+#' @import dplyr
+#' @import tidyr
+#'
+#' @examples
+
+reshape_metric <- function(df, metric, type) {
+  reshaped_df <- df %>%
+    select(ligand, !!sym(metric), method, database, rank) %>%  # Use !!sym to dynamically select the metric column
+    rename(value = !!sym(metric)) %>%
+    mutate(type = type) %>%
+    filter(!is.na(value))  # Filter out NA values
+  
+  return(reshaped_df)
 }
