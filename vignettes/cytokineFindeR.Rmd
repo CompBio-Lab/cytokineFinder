@@ -78,7 +78,7 @@ methods <- c("cfgsea",
              "gsva_limma", 
              "pca_limma", 
              "gsva_plsda", 
-             "cpca_plsda")
+             "pca_plsda")
 
 results <- cytokinefinder(eset_f, 
                           design_mat, 
@@ -98,7 +98,6 @@ data_ligand <- extract_ligands(
   benchmark_results = results, 
   ligands = "TNF"
   )
+
 plot_ligand_summary(data_ligand)
 ```
-
-
