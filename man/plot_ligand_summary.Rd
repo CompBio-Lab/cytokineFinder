@@ -12,3 +12,10 @@ plot_ligand_summary(data)
 \description{
 Plot Ligand of Interest summary result across methods and databases
 }
+\examples{
+#Example usage:
+#Assuming 'res' is the output from extract_ligand
+\dontrun{
+plot_ligand_summary(res)
+}
+}

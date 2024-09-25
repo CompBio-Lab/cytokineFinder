@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats_cpca_plsda.R
 \name{pca_plsda}
 \alias{pca_plsda}
-\title{Title}
+\title{Perform PCA and fit a multivariate regression to measure ligand activity}
 \usage{
 pca_plsda(eset, treatment, db)
 }
@@ -14,7 +14,7 @@ pca_plsda(eset, treatment, db)
 \item{db}{ligand-receptor database}
 }
 \description{
-Title
+Perform PCA and fit a multivariate regression to measure ligand activity
 }
 \examples{
 # Load the database
