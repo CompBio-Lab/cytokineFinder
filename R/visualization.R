@@ -29,7 +29,7 @@ plot_ligand_summary <- function(data) {
     #mutate(sig = -log10(pval))
   
   # Create the plot
-  ggplot(summary_data, aes(x = reorder(method, rank), y = rank, fill = database)) +
+  plot <- ggplot(summary_data, aes(x = reorder(method, rank), y = rank, fill = database)) +
     geom_bar(stat = "identity", position = "dodge") +
     #geom_errorbar(aes(ymin = mean_pval - sd_pval, ymax = mean_pval + sd_pval), width = .2, position = position_dodge(.9)) +
     ylab("Percentile Rank") +
@@ -39,4 +39,6 @@ plot_ligand_summary <- function(data) {
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
           panel.grid.major = element_blank(),  # Remove major grid lines
           panel.grid.minor = element_blank())
+  
+  return(plot)
 }
