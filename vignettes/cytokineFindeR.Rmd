@@ -89,14 +89,12 @@ results <- cytokinefinder(eset_f,
                           )
 ```
 
-
 # Visualize the data:
 ## First, extract the relevant ligands from the results object
 ```{r}
 data_ligand <- extract_ligands(
   benchmark_results = results, 
-  ligands = "TNF"
-  )
+  ligands = "TNF")
 
 plot_ligand_summary(data_ligand)
 ```

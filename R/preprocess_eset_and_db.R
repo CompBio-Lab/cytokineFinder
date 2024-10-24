@@ -60,7 +60,7 @@ filter_db_against_eset <- function(eset, dbs) {
 }
 
 
-#' Title
+#' Remove zero variance ligands from the database list of list
 #'
 #' @param eset 
 #' @param dbs 
