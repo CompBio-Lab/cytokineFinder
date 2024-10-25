@@ -12,7 +12,7 @@
 #' @importFrom Biobase pData
 #' @importFrom Biobase exprs
 
-retrieve_geo = function(geo_id){
+retrieve_geo <- function(geo_id){
   geo_data <- tryCatch({
     getGEO(geo_id, GSEMatrix = TRUE)
   }, error = function(e) {
@@ -21,6 +21,7 @@ retrieve_geo = function(geo_id){
     return(NULL)
   })
   e1 <- geo_data
+  # handle retrieval if e1 returns a list
   combined_data <- lapply(e1, function(i){
     metadata <- pData(i)
     eset <- exprs(i)
