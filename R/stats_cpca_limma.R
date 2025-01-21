@@ -3,6 +3,8 @@
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
 #' @param db Ligand-receptor database
+#' @param obs_id Optional: provide a vector of sample IDs making sure the order matches with the eset
+#' @param correlation Optional: input the correlation consensus between the samples to evaluate if it is paired data
 #' 
 #' @return a data frame of differentially expressed ligands ordered by p-values
 #' @export
@@ -15,8 +17,11 @@
 #' @importFrom limma topTable
 #' @importFrom tibble enframe
 
-pca_limma <- function(eset, design, db, 
-                 obs_id = NULL, correlation = NULL) {
+pca_limma <- function(eset, 
+                      design, 
+                      db, 
+                      obs_id = NULL, 
+                      correlation = NULL) {
   # Check if the design matrix is a data frame or matrix
   if (!is.data.frame(design) && !is.matrix(design)) {
     stop("The design argument must be a data frame or matrix.")
@@ -41,8 +46,9 @@ pca_limma <- function(eset, design, db,
     fit <- lmFit(pc, design)
   }
   efit <- eBayes(fit)
-  top <- topTable(efit, coef = 2, number = nrow(efit))
-  pval <- top$P.Value
-  names(pval) <- rownames(top)
-  return(enframe(pval[order(pval)], name = "ligand", value = "pval"))
+  top <- topTable(efit, coef = 2, number = nrow(efit)) %>%
+    rownames_to_column("ligand") %>%
+    dplyr::rename(pval = P.Value, padj = adj.P.Val)
+  
+  return(top)
 }
