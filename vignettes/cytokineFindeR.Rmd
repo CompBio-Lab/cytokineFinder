@@ -26,6 +26,7 @@ knitr::opts_chunk$set(
 # Load the R packages
 ```{r setup}
 library(cytokineFindeR)
+library(tidyverse)
 ```
 
 # Pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients

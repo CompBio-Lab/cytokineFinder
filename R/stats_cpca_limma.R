@@ -16,6 +16,7 @@
 #' @importFrom limma lmFit
 #' @importFrom limma topTable
 #' @importFrom tibble enframe
+#' @importFrom tibble rownames_to_column
 
 pca_limma <- function(eset, 
                       design, 

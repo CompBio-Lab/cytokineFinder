@@ -65,7 +65,7 @@ filter_db_against_eset <- function(eset, dbs) {
 #' @param eset 
 #' @param dbs 
 #'
-#' @return
+#' @return A list of databases with ligands removed if there is 0 variance based on the eset
 #' @export
 #'
 #' @examples

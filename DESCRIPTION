@@ -1,6 +1,6 @@
 Package: cytokineFindeR
 Title: Measure ligands of interest (cytokines) across different methods and databases
-Version: 0.0.0.9000
+Version: 0.0.1.9000
 Authors@R: 
     person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -24,7 +24,8 @@ Imports:
     ggplot2,
     purrr,
     tibble,
-    tidyr
+    tidyr,
+    tidyverse
 Suggests: 
     knitr,
     rmarkdown,

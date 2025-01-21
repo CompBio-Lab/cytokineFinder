@@ -15,6 +15,7 @@
 #' @importFrom GSVA gsvaParam
 #' @importFrom GSVA gsva
 #' @importFrom tibble enframe
+#' @importFrom tibble rownames_to_column
 #' 
 #' @examples
 
