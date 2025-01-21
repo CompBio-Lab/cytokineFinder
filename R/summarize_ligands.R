@@ -61,24 +61,24 @@ extract_ligands <- function(benchmark_results, ligands) {
 #' @examples
 
 process_method_db <- function(df, method_name, db_name) {
-  # Determine if the dataframe contains 'pval' or 'coef'
-  if ("pval" %in% colnames(df)) {
-    metric_col <- "pval"
+  # Determine if the dataframe contains 'padj' or 'coef'
+  if ("padj" %in% colnames(df)) {
+    metric_col <- "padj"
   } else if ("coef" %in% colnames(df)) {
     metric_col <- "coef"
   } else {
-    stop("Data frame must contain either 'pval' or 'coef' column.")
+    stop("Data frame must contain either 'padj' or 'coef' column.")
   }
   # Extract and filter data for the specified ligands
   reindex_rank_order <- df %>%
     # add column and populate value with method and database
     mutate(database = db_name, method = method_name) %>% 
     # Dynamically sort by metric_col
-    arrange(if (metric_col == "pval") {
-      pval
-      } else {
-        desc(coef)
-      }) %>%
+    arrange(if (metric_col == "padj") {
+      padj
+    } else {
+      desc(coef)
+    }) %>%
     mutate(rank = 100*(1 - (row_number()/n()))) 
   
   return(reindex_rank_order)
@@ -96,15 +96,16 @@ process_method_db <- function(df, method_name, db_name) {
 
 summarize_df <- function(results_df) {
   # Reshape both p-values and coefficients using the helper function
-  pval_summary <- reshape_metric(results_df, "pval", "pval")
-  coef_summary <- reshape_metric(results_df, "coef", "coef")
+  pval_summary <- reshape_metric(results_df, "padj", "padj")
+  #coef_summary <- reshape_metric(results_df, "coef", "coef")
   
   # Combine both summaries into one final DataFrame
-  final_summary_df <- bind_rows(pval_summary, coef_summary) %>%
+  final_summary_df <- pval_summary %>%
     arrange(method, type, rank)  # Sort if needed
   
   return(final_summary_df)
 }
+
 
 #' Secondary helper function to reshape a specific metric into the desired format
 #'
