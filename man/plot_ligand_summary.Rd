@@ -9,6 +9,9 @@ plot_ligand_summary(data)
 \arguments{
 \item{data}{}
 }
+\value{
+A bar plot figure showing the different methods+database combinations
+}
 \description{
 Plot Ligand of Interest summary result across methods and databases
 }

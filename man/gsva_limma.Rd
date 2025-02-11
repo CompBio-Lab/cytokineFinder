@@ -17,6 +17,9 @@ gsva_limma(eset, design, db, obs_id = NULL, correlation = NULL)
 
 \item{correlation}{Optional: input the correlation consensus between the samples to evaluate if it is paired data}
 }
+\value{
+top table of all ligands
+}
 \description{
 Gene Set Variation Analysis for cytokines (cGSVA)
 }

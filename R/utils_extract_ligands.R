@@ -5,7 +5,7 @@
 #'
 #' @param benchmark_results A BenchmarkResults object containing nested results
 #' @param ligands A vector of ligands to filter BenchmarkResults against
-#' @param metric The metric column to use for sorting and ranking ("padj", "pval", "coef")
+#' @param metric A vector of metrics to select from ("padj", "pval", "coef")
 #'
 #' @return A data frame containing extracted results for specified ligands
 #' @export
@@ -18,8 +18,8 @@
 #'     ligands = c("LigandA", "LigandB"),
 #'     metric = "coef")
 #' }
-extract_ligands <- function(benchmark_results, ligands, metric = "padj") {
-  # Provide a vector of cytokines to find
+
+extract_ligands <- function(benchmark_results, ligands, metrics = c("padj", "coef")) {
   ligands <- as.vector(ligands)
   
   results_df <- map_dfr(
@@ -32,15 +32,15 @@ extract_ligands <- function(benchmark_results, ligands, metric = "padj") {
             df = benchmark_results[[method_name]][[db_name]],
             method_name = method_name,
             db_name = db_name,
-            metric = metric
+            metrics = metrics
           )
         }
       )
     }
   )
   
-  summary_df <- summarize_df(results_df, metric) %>%
-    filter(ligand %in% ligands)
+  summary_df <- results_df %>%
+    filter(ligand %in% ligands, metric_type %in% metrics)
   
   return(summary_df)
 }
@@ -54,24 +54,34 @@ extract_ligands <- function(benchmark_results, ligands, metric = "padj") {
 #' @return Processed data frame with ranking
 #' @export
 
-process_method_db <- function(df, method_name, db_name, metric) {
-  if (!metric %in% colnames(df)) {
-    stop("Metric column '", metric, "' not found in data frame")
+process_method_db <- function(df, method_name, db_name, metrics) {
+  # Validate available metrics
+  available_metrics <- intersect(metrics, colnames(df))
+  if (length(available_metrics) == 0) {
+    warning("No specified metrics found in ", method_name, "/", db_name)
+    return(NULL)
   }
   
-  sorted_df <- if (metric == "coef") {
-    df %>% arrange(desc(.data[[metric]]))
-  } else {
-    df %>% arrange(.data[[metric]])
-  }
-  
-  sorted_df %>%
-    mutate(
-      database = db_name,
-      method = method_name,
-      # rank is based on top table list n of all ligands and the ligand's relative position 
-      rank = 100 * (1 - (row_number() / n()))
-    )
+  # Process each metric independently
+  map_dfr(available_metrics, function(metric) {
+    # Determine sort direction
+    sorted_df <- if (metric == "coef") {
+      df %>% arrange(desc(.data[[metric]]))
+    } else {
+      df %>% arrange(.data[[metric]])
+    }
+    
+    # Calculate metric-specific ranks
+    sorted_df %>%
+      mutate(
+        database = db_name,
+        method = method_name,
+        metric_type = metric,
+        rank = 100 * (1 - (row_number() / n())),
+        value = .data[[metric]]
+      ) %>%
+      select(ligand, value, method, database, rank, metric_type)
+  })
 }
 
 #' @rdname extract_ligands

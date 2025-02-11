@@ -95,7 +95,6 @@ results <- cytokinefinder(eset_f,
 ```{r}
 data_ligand <- extract_ligands(
   benchmark_results = results, 
-  ligands = "TNF")
-
-plot_ligand_summary(data_ligand)
+  ligands = "TNF",
+  metric = c("padj", "coef"))
 ```

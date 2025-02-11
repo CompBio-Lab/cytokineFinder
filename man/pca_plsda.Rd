@@ -13,6 +13,9 @@ pca_plsda(eset, treatment, db)
 
 \item{db}{ligand-receptor database}
 }
+\value{
+Table of ranked ligands by coef order (largest to smallest)
+}
 \description{
 Perform PCA and fit a multivariate regression to measure ligand activity
 }
