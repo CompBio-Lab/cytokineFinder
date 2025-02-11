@@ -4,7 +4,7 @@
 #' @param treatment Treatment response variable
 #' @param db ligand-receptor database
 #'
-#' @return 
+#' @return Table of ranked ligands by coef order (largest to smallest)
 #' @export
 #'
 #' @examples

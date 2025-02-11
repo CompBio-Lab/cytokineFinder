@@ -6,7 +6,7 @@
 #' @param obs_id Optional: provide a vector of sample IDs making sure the order matches with the eset
 #' @param correlation Optional: input the correlation consensus between the samples to evaluate if it is paired data
 #'
-#' @return
+#' @return top table of all ligands
 #' @export
 #'
 #' @importFrom limma lmFit

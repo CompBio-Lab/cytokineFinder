@@ -46,8 +46,6 @@ extract_ligands <- function(benchmark_results, ligands, metric = "padj") {
 }
 
 #' @rdname extract_ligands
-#' Process each method-database combination with specified metric
-#'
 #' @param df Input data frame
 #' @param method_name Name of the method
 #' @param db_name Name of the database
@@ -77,8 +75,6 @@ process_method_db <- function(df, method_name, db_name, metric) {
 }
 
 #' @rdname extract_ligands
-#' Create summary data frame for specified metric
-#'
 #' @param results_df Combined results data frame
 #' @param metric Metric column to summarize
 #'
@@ -91,8 +87,6 @@ summarize_df <- function(results_df, metric) {
 }
 
 #' @rdname extract_ligands
-#' Reshape data for specified metric
-#'
 #' @param df Input data frame
 #' @param metric Column name to reshape
 #' @param type Type label for the metric

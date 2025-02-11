@@ -2,7 +2,7 @@
 #'
 #' @param geo_ids A character string representing the GEO ID
 #'
-#' @return
+#' @return A combined list of data frames
 #' @export
 #' @name retrieve_geo
 #'

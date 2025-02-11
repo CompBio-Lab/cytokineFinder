@@ -2,7 +2,7 @@
 #'
 #' @param data 
 #'
-#' @return
+#' @return A bar plot figure showing the different methods+database combinations
 #' @export
 #' @name plot_ligand_summary
 #' @import dplyr
