@@ -1,9 +1,9 @@
 Package: cytokineFindeR
 Title: Measure ligands of interest (cytokines) across different methods and databases
-Version: 0.0.1.9000
+Version: 0.0.1.9001
 Authors@R: 
     person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0002-5633-6123"))
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
