@@ -81,7 +81,7 @@ run_lri_method <- function(method, method_name, eset, design, dbs,
   method_results <- future_lapply(names(dbs_preprocessed), function(database) {
     message(paste("Processing method:", method_name, "with database:", database))
     
-    if (grepl("plsda", method_name)) {
+    if (grepl("plsda", method_name)) { # come back to this, not sure why I ran plsda without pairs
       result <- method(eset_preprocessed, treatment, dbs_preprocessed[[database]])
     } else {
       if (!is.null(obs_id)) {
