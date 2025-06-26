@@ -4,7 +4,7 @@
 #' @param eset Expression Set as a numeric matrix
 #' @param gene_list_df 
 #'
-#' @return
+#' @return cleaned up expression matrix
 #' @export
 #' @name clean_eset
 #'

@@ -6,7 +6,7 @@
 #' @param correlation if paired design, indicate correlation blocks for paired data
 #' @param beta beta matrix for ridge regression from published CytoSig
 #'
-#' @returns
+#' @return CytoSig ridge regression results table
 #' @export
 #'
 #' @examples

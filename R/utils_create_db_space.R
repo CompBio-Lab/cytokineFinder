@@ -5,7 +5,7 @@
 #' @param filePath 
 #' @param saveToFile 
 #'
-#' @return
+#' @return Saves the database list
 #' @export
 #'
 #' @examples
