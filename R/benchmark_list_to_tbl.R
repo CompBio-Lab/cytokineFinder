@@ -6,6 +6,8 @@
 #' 
 #' @return A tibble with flattened benchmark results
 #' Convert nested results to tibble format (handles both benchmark and cytosig structures)
+#' @importFrom purrr imap_dfr
+#' @importFrom tibble tibble
 
 benchlist_to_tbl <- function(results_list,
                              study_type, 

@@ -7,6 +7,8 @@
 #' @return multi_study_data with added results for each study
 #' @export
 #'
+#' @importFrom rlang %||%
+#'
 #' @examples
 #' # Single study example
 #' study_data <- list(
