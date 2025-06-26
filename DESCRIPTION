@@ -25,7 +25,8 @@ Imports:
     purrr,
     tibble,
     tidyr,
-    tidyverse
+    tidyverse,
+    rlang
 Suggests: 
     knitr,
     rmarkdown,
