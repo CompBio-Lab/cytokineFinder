@@ -17,7 +17,7 @@ cytosig_custom_ridge <- function(eset, design,
                                  obs_id = NULL, 
                                  correlation = NULL,
                                  beta) {
-  logfc <- run_limma(eset, design$design, obs_id, design$dupcor$correlation) %>%
+  logfc <- run_limma(eset, design, obs_id, correlation) %>%
     select(genes,logFC) %>%
     column_to_rownames("genes")
   com_genes <- intersect(rownames(beta), logfc$genes)

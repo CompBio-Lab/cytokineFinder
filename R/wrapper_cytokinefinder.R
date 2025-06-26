@@ -19,90 +19,63 @@
 #' @importFrom future.apply future_lapply future_sapply
 #' @examples
 #' 
-cytokinefinder <- function(eset, design, dbs, methods, 
-                           treatment = NULL, obs_id = NULL, correlation = NULL) { 
-  future::plan(future::multicore)
+run_lri_methods <- function(eset, design, dbs, methods,
+                           treatment = NULL, obs_id = NULL, correlation = NULL) {
+  # Set up the future plan
+  future::plan(future::multicore)  # Set up multicore parallelism
+  
+  # Initialize an empty list to store results
   results <- list()
   
-  modelbased_methods <- c("cytosig_custom_ridge")
-  
+  # Iterate over each method in the methods list
   for (method_name in methods) {
     method <- get(method_name)
     
-    if (method_name %in% modelbased_methods) {
-      # Model-based methods use original data
-      results[[method_name]] <- run_model_method(
-        method, method_name, eset, design, treatment, obs_id, correlation
-      )
-    } else {
-      # LRI methods handle their own preprocessing
-      results[[method_name]] <- run_lri_method(
-        method, method_name, eset, design, dbs, treatment, obs_id, correlation
-      )
-    }
-  }
-  return(structure(results, class = "BenchmarkResults"))
-}
-
-#' Run database-independent methods
-#' @keywords internal
-run_model_method <- function(method, method_name, eset, design,
-                             treatment, obs_id, correlation) {
-  message(paste("Processing database-independent method:", method_name))
-  
-  # Model-based methods (no database needed)
-  if (!is.null(obs_id)) {
-    result <- method(eset, design, obs_id = obs_id, correlation = correlation)
-  } else {
-    result <- method(eset, design)
-  }
-  
-  message(paste("Finished processing method:", method_name))
-  
-  # Return in consistent format
-  # Return with method name as "database" equivalent
-  # For "cytosig_custom_ridge" -> return list(cytosig = result)
-  model_name <- gsub("_custom_ridge", "", method_name)  # "cytosig_custom_ridge" -> "cytosig"
-  return(setNames(list(result), model_name))
-}
-
-
-#' Run database-dependent methods with preprocessing
-#' @keywords internal
-run_lri_method <- function(method, method_name, eset, design, dbs, 
-                           treatment, obs_id, correlation) {
-  
-  # Preprocess data for LRI methods
-  message(paste("Preprocessing data for method:", method_name))
-  preprocess_results <- preprocess_eset(eset = eset, dbs = dbs)
-  eset_preprocessed <- preprocess_results$eset_f
-  dbs_preprocessed <- preprocess_results$dbs_f
-  
-  method_results <- future_lapply(names(dbs_preprocessed), function(database) {
-    message(paste("Processing method:", method_name, "with database:", database))
-    
-    if (grepl("plsda", method_name)) { # come back to this, not sure why I ran plsda without pairs
-      result <- method(eset_preprocessed, treatment, dbs_preprocessed[[database]])
-    } else {
-      if (!is.null(obs_id)) {
-        result <- method(eset_preprocessed, design, dbs_preprocessed[[database]], 
-                         obs_id = obs_id, correlation = correlation)
+    # Parallel execution for the current method
+    method_results <- future_lapply(names(dbs), function(database) {
+      message(paste("Processing method:",
+                    method_name,
+                    "with database:",
+                    database)
+      )  # Debug statement
+      
+      # Check if the method is PLSDA-based:
+      if (grepl("plsda", method_name)) {
+        # Run the plsda method
+        result <- method(eset, treatment, dbs[[database]])
       } else {
-        result <- method(eset_preprocessed, design, dbs_preprocessed[[database]])
+        # Run non-PLSDA method
+        ## Check if it is a paired experiment by checking obs_id
+        if (!is.null(obs_id)) {
+          result <- method(eset, design,
+                           dbs[[database]],
+                           obs_id = obs_id,
+                           correlation = correlation)
+        } else{
+          result <- method(eset, design, dbs[[database]])
+        }
       }
-    }
+      
+      message(paste("Finished processing method:",
+                    method_name,
+                    "with database:",
+                    database)
+      )  # Debug statement
+      return(list(database = database, result = result))
+    }, future.seed = TRUE)  # Set future.seed to ensure reproducibility
     
-    message(paste("Finished processing method:", method_name, "with database:", database))
-    return(list(database = database, result = result))
-  }, future.seed = TRUE)
+    # Organize results into a named list
+    message(paste("Combining into one BenchmarkResults Object"))
+    method_results_named <- setNames(
+      lapply(method_results, `[[`, "result"), # extract method results
+      sapply(method_results, `[[`, "database") # extract database name
+    )
+    # Store the results in the main results list
+    results[[method_name]] <- method_results_named
+  }
   
-  # Organize results
-  method_results_named <- setNames(
-    lapply(method_results, `[[`, "result"),
-    sapply(method_results, `[[`, "database")
-  )
-  
-  return(method_results_named)
+  # Create and return results object
+  return(structure(results, class = "BenchmarkResults"))
 }
 
 #' Wrapper function to run complete cytokinefinder benchmarking workflow with preprocessing
