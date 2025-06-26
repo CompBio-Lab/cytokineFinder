@@ -50,21 +50,22 @@ run_model_method <- function(method, method_name, eset, design,
                              treatment, obs_id, correlation) {
   message(paste("Processing database-independent method:", method_name))
   
-  if (grepl("plsda", method_name)) {
-    result <- method(eset, treatment)
+  # Model-based methods (no database needed)
+  if (!is.null(obs_id)) {
+    result <- method(eset, design, obs_id = obs_id, correlation = correlation)
   } else {
-    if (!is.null(obs_id)) {
-      result <- method(eset, design, obs_id = obs_id, correlation = correlation)
-    } else {
-      result <- method(eset, design)
-    }
+    result <- method(eset, design)
   }
   
   message(paste("Finished processing method:", method_name))
   
-  # Return in consistent format - single result labeled as "standalone"
-  return(list(result))
+  # Return in consistent format
+  # Return with method name as "database" equivalent
+  # For "cytosig_custom_ridge" -> return list(cytosig = result)
+  model_name <- gsub("_custom_ridge", "", method_name)  # "cytosig_custom_ridge" -> "cytosig"
+  return(setNames(list(result), model_name))
 }
+
 
 #' Run database-dependent methods with preprocessing
 #' @keywords internal
