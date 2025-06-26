@@ -19,8 +19,9 @@
 #' @importFrom future.apply future_lapply future_sapply
 #' @examples
 
-cytokinefinder <- function(eset, design, dbs, methods,
-                           treatment = NULL, obs_id = NULL, correlation = NULL) {
+run_lri_methods <- function(eset, design, dbs, methods,
+                            treatment = NULL, obs_id = NULL, 
+                            correlation = NULL) {
   # Set up the future plan
   future::plan(future::multicore)  # Set up multicore parallelism
 
