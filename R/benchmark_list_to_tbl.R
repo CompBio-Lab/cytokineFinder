@@ -8,6 +8,8 @@
 #' Convert nested results to tibble format (handles both benchmark and cytosig structures)
 #' @importFrom purrr imap_dfr
 #' @importFrom tibble tibble
+#' 
+#' @export
 
 benchlist_to_tbl <- function(results_list,
                              study_type, 
