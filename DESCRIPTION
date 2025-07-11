@@ -25,9 +25,9 @@ Imports:
     purrr,
     tibble,
     tidyverse,
+    knitr,
     rlang
 Suggests: 
-    knitr,
     rmarkdown,
     testthat (>= 3.0.0),
     BiocManager
