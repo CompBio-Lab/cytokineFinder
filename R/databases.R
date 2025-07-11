@@ -4,6 +4,12 @@
 #' @source Various ligand receptor interaction databases
 "dbs_all"
 
+#' Small Database example
+#' 
+#' @format A list of lists containing LRIs for a subset of database sources
+#' @source Various ligand receptor interaction databases
+"dbs_subset"
+
 #' CytoSig Betas
 #' 
 #' @format A matrix of cytosig gene co-expression weights or betas

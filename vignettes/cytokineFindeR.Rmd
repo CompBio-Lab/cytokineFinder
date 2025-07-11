@@ -42,10 +42,9 @@ eset <- golimumab$eset
 # Pre-filtered databases against CytoSig cytokines
 ```{r}
 # load the default databases list of lists
-data("dbs_all")
-
+data("dbs_subset")
+dbs <- dbs_subset
 # Make sure to remove cytosig before 
-dbs <- dbs_all[names(dbs_all) != "cytosig"]
 
 data("beta")
 ```
@@ -67,9 +66,7 @@ eset_f <- preprocess_list$eset_f
 dbs_f <- preprocess_list$dbs_f
 ```
 
-
-
-# Call the database, 
+# Call the databases, 
 # list out the methods to benchmark, 
 # run `cytokinefinder()`
 # The result should return a nested list of benchmark results
@@ -86,7 +83,10 @@ results <- run_lri_methods(eset_f,
                            obs_id = obs_id,
                            correlation = dupcor$consensus
                           )
+```
 
+# CytoSig Custom ridge can be run through the following function:
+```{r}
 cytosig <- cytosig_custom_ridge(eset, 
                      design_mat, 
                      obs_id = obs_id, 
@@ -94,7 +94,7 @@ cytosig <- cytosig_custom_ridge(eset,
                      beta = beta)
 ```
 
-# Restructure the data into a tibble:
+# Reconstruct the data into a tibble:
 ```{r}
 golimumab_treatment <- list(TNF = list(benchmarks = results))
 golimumab_tibble <- benchlist_to_tbl(results_list = golimumab_treatment,
