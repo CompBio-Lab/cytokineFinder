@@ -43,7 +43,10 @@ eset <- golimumab$eset
 ```{r}
 # load the default databases list of lists
 data("dbs_all")
-dbs <- dbs_all
+
+# Make sure to remove cytosig before 
+dbs <- dbs_all[names(dbs_all) != "cytosig"]
+
 data("beta")
 ```
 
