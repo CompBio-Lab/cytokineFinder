@@ -42,11 +42,9 @@ eset <- golimumab$eset
 # Pre-filtered databases against CytoSig cytokines
 ```{r}
 # load the default databases list of lists
-data("dbs_cytosig_ligands")
-dbs <- dbs_cytosig_ligands
-rm(dbs_cytosig_ligands)
-
-data(beta)
+data("dbs_all")
+dbs <- dbs_all
+data("beta")
 ```
 
 # Set up the design matrix for demo data 
