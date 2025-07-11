@@ -24,7 +24,6 @@ Imports:
     ggplot2,
     purrr,
     tibble,
-    tidyr,
     tidyverse,
     rlang
 Suggests: 

@@ -40,7 +40,7 @@
 #' benchmark_results <- results$benchmarks
 #' design_matrix <- results$design
 #' }
-run_lri_methods_batch <- function(study_data, databases, methods) {
+run_cytokinefinder <- function(study_data, databases, methods) {
   # Validate required elements
   required_elements <- c("qc_eset", "cond")
   missing <- setdiff(required_elements, names(study_data))

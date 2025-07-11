@@ -17,6 +17,9 @@ create_db_space(
 
 \item{saveToFile}{}
 }
+\value{
+Saves the database list
+}
 \description{
 Title
 }

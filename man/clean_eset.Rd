@@ -12,6 +12,9 @@ clean_eset(eset, gene_list_df)
 
 \item{gene_list_df}{}
 }
+\value{
+cleaned up expression matrix
+}
 \description{
 Given an expression set, make sure that data is
 cleaned by gene name using a provided gene list data frame
