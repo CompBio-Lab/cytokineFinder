@@ -45,8 +45,6 @@ eset <- golimumab$eset
 data("dbs_subset")
 dbs <- dbs_subset
 # Make sure to remove cytosig before 
-
-data("beta")
 ```
 
 # Set up the design matrix for demo data 
@@ -71,8 +69,7 @@ dbs_f <- preprocess_list$dbs_f
 # run `cytokinefinder()`
 # The result should return a nested list of benchmark results
 ```{r, warning=FALSE}
-methods <- c("cfgsea", 
-             "gsva_limma", 
+methods <- c("gsva_limma", 
              "pca_limma")
 
 results <- run_lri_methods(eset_f,
@@ -87,6 +84,7 @@ results <- run_lri_methods(eset_f,
 
 # CytoSig Custom ridge can be run through the following function:
 ```{r}
+data("beta")
 cytosig <- cytosig_custom_ridge(eset, 
                      design_mat, 
                      obs_id = obs_id, 
