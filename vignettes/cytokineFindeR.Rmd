@@ -33,10 +33,10 @@ library(tidyverse)
 ```{r}
 data(golimumab)
 
-obs_id <- golimumab$metadata$`subject:ch1`
-treatment <- golimumab$metadata$`visit:ch1`
+obs_id <- golimumab$obs_id
+treatment <- golimumab$cond
 
-eset <- golimumab$eset
+eset <- golimumab$qc_eset
 ```
 
 # Pre-filtered databases against CytoSig cytokines
