@@ -89,7 +89,7 @@ cytosig <- cytosig_custom_ridge(eset,
                      design_mat, 
                      obs_id = obs_id,
                      correlation = dupcor$consensus, 
-                     beta = beta)
+                     beta_coef = beta)
 ```
 
 # Reconstruct the data into a tibble:
