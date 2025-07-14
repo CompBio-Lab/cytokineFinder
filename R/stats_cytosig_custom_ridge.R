@@ -25,7 +25,7 @@ cytosig_custom_ridge <- function(eset, design,
     tibble::column_to_rownames("genes")
   com_genes <- intersect(rownames(beta_coef), rownames(logfc))
   bulk <- as.matrix(logfc[com_genes, ])
-  sig <- beta_coef[com_genes, ]
+  sig <- as.matrix(beta_coef[com_genes, ])
   
   # create adjacency matrix for cytoSig
   beta1 <- solve(crossprod(sig, sig) + diag(ncol(sig)))
