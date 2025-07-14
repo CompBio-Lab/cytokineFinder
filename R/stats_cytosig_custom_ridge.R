@@ -17,6 +17,12 @@ cytosig_custom_ridge <- function(eset, design,
                                  obs_id = NULL, 
                                  correlation = NULL,
                                  beta_coef) {
+  
+  # Force evaluation of all parameters
+  force(eset)
+  force(design)
+  force(beta_coef)
+  
   logfc <- run_limma(eset, design, obs_id, correlation) %>%
     select(genes,logFC) %>%
     tibble::column_to_rownames("genes")
