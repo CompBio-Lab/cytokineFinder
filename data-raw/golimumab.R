@@ -2,35 +2,50 @@
 library(cytokineFindeR)
 library(tidyverse)
 
-## code to prepare `golimumab` dataset goes here
-dbs_all <- dbs_all
-combined_data <- retrieve_geo("GSE92415")
-dim(combined_data$metadata); dim(combined_data$annotations); dim(combined_data$eset);
-all(rownames(combined_data$metadata) == colnames(combined_data$eset))
+# ULCERATIVE COLITIS anti-TNF DRUG paired data
+## retrieve from GEO and clean metadata and annotations
+golimumab <- retrieve_geo("GSE92415")
 
-# in this specific dataset, I subset to just golimumab treated samples
-golimumab <- subset(combined_data$metadata, `treatment:ch1` == "golimumab")
-eset <- combined_data$eset[rownames(combined_data$annotations), rownames(golimumab)]
-all(rownames(eset) == rownames(combined_data$annotations))
+metadata <- golimumab$GSE92415_series_matrix.txt.gz$metadata %>%
+  filter(`treatment:ch1` %in% c("golimumab")) 
 
-# subset the gene list 
-gensym <- sapply(strsplit(combined_data$annotations$`Gene Symbol`, "///"), trimws) 
+# Get metadata for paired samples 
+# this will be used to filter the columns for the eset
+md_paired <- metadata |> 
+  group_by(`subject:ch1`) |>
+  filter(n()>1) |>
+  select(title, geo_accession, `subject:ch1`,`visit:ch1`)
 
-id_gensym <- tibble(probeids = rep(rownames(combined_data$annotations), 
+# get obs_id and condition
+cond <- factor(md_paired$`visit:ch1`, levels = c("Week 0", "Week 6"))
+obs_id <- md_paired$`subject:ch1`
+
+# clean up eset:
+gensym <- sapply(strsplit(golimumab$GSE92415_series_matrix.txt.gz$annotations$`Gene Symbol`, "///"), trimws) 
+
+id_gensym <- tibble(probeids = rep(rownames(golimumab$GSE92415_series_matrix.txt.gz$annotations), 
                                    sapply(gensym, length)),
-                    gensym = unlist(gensym)) %>%
-  filter(gensym %in% unique(unlist(dbs_all)))
+                    gensym = unlist(gensym)) 
 
-golimumab_eset <- clean_eset(combined_data$eset, 
-                   gene_list_df = id_gensym)
 
-# subset Expression Set data on the treatment 
-golimumab_eset <- golimumab_eset[,colnames(combined_data$eset) %in% rownames(golimumab)]
+## apply annotations to eset and QC
+eset <- clean_eset(golimumab$GSE92415_series_matrix.txt.gz$eset, 
+                   id_gensym)
 
-# Combine metadata and expression matrix into a list
-golimumab <- list(
-  metadata = golimumab,
-  eset = golimumab_eset
-)
+match <- match(md_paired$geo_accession, colnames(eset))
+eset <- eset[,match,drop=FALSE] 
+
+
+## Filter zero variance genes 
+# filter non-zero variance genes
+eset <- eset[apply(eset,1,sd) > 0,]
+#hist(eset)
+
+# No obvious spike so did not apply a low gexprs filter
+
+golimumab <- list(md = md_paired,
+                  qc_eset = eset,
+                  cond = cond,
+                  obs_id = obs_id)
 
 usethis::use_data(golimumab, overwrite = TRUE)
