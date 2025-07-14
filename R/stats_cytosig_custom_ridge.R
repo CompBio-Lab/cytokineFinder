@@ -19,16 +19,13 @@ cytosig_custom_ridge <- function(eset, design,
                                  beta_coef) {
   
   # Force evaluation of all parameters
-  force(eset)
-  force(design)
-  force(beta_coef)
-  
+
   logfc <- run_limma(eset, design, obs_id, correlation) %>%
-    select(genes,logFC) %>%
+    dplyr::select(genes,logFC) %>%
     tibble::column_to_rownames("genes")
   com_genes <- intersect(rownames(beta_coef), rownames(logfc))
   bulk <- as.matrix(logfc[com_genes, ])
-  sig<-beta_coef[com_genes, ]
+  sig <- beta_coef[com_genes, ]
   
   # create adjacency matrix for cytoSig
   beta1 <- solve(crossprod(sig, sig) + diag(ncol(sig)))
