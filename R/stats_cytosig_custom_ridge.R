@@ -5,7 +5,8 @@
 #' @param obs_id if paired design, indicate observation ID to map biological replicates to sample of origin if paired
 #' @param correlation if paired design, indicate correlation blocks for paired data
 #' @param beta beta matrix for ridge regression from published CytoSig
-#'
+#' 
+#' @importFrom tibble column_to_rownames
 #' @return CytoSig ridge regression results table
 #' @export
 #'
@@ -19,7 +20,7 @@ cytosig_custom_ridge <- function(eset, design,
                                  beta) {
   logfc <- run_limma(eset, design, obs_id, correlation) %>%
     select(genes,logFC) %>%
-    column_to_rownames("genes")
+    tibble::column_to_rownames("genes")
   com_genes <- intersect(rownames(beta), rownames(logfc))
   bulk <- as.matrix(logfc[com_genes, ])
   sig<-beta[com_genes, ]
