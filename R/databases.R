@@ -14,4 +14,4 @@
 #' 
 #' @format A matrix of cytosig gene co-expression weights or betas
 #' @source From CytoSig
-"beta"
+"cytosig_beta"
