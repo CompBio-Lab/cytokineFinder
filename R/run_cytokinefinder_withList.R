@@ -60,20 +60,20 @@ run_cytokinefinder <- function(study_data, databases, methods) {
   # Create design matrix for original data (model-based methods need this)
   if (!is.null(obs_id)) {
     design_results <- create_design(study_data$cond, obs_id = obs_id, eset = eset)
-    lri_method_results <- run_lri_methods(eset = eset_f,
-                                          design = design_results$design,
-                                          dbs = dbs_f,
-                                          methods = methods,
-                                          treatment = study_data$cond,
-                                          obs_id = obs_id,
-                                          correlation = design_results$dupcor$consensus)
+    benchmark_results <- run_lri_methods(eset = eset_f,
+                                         design = design_results$design,
+                                         dbs = dbs_f,
+                                         methods = methods,
+                                         treatment = study_data$cond,
+                                         obs_id = obs_id,
+                                         correlation = design_results$dupcor$consensus)
   } else {
     design_results <- create_design(study_data$cond, eset = eset)
-    benchmark_results <- cytokinefinder(eset = eset_f,
-                                        design = design_results$design,
-                                        dbs = dbs_f, 
-                                        methods = methods, 
-                                        treatment = study_data$cond)
+    benchmark_results <- run_lri_methods(eset = eset_f,
+                                         design = design_results$design,
+                                         dbs = dbs_f, 
+                                         methods = methods, 
+                                         treatment = study_data$cond)
   }
   
   # Add results to study data
