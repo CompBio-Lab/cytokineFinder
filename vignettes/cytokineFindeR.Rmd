@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The following is a brief introduction on the usage of `CytokineFindeR`. 
+The following is a brief introduction on the usage of `CytokineFindeR`.
 
 This vignette will outline the following procedures:
 1) Setting up the design matrix for the linear models
@@ -23,13 +23,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Load the R packages
+## Load the R packages
 ```{r setup}
 library(cytokineFindeR)
 library(tidyverse)
 ```
 
-# Pull up demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
+Load demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
 ```{r}
 data(golimumab)
 
@@ -39,7 +39,12 @@ treatment <- golimumab$cond
 eset <- golimumab$qc_eset
 ```
 
-# Pre-filtered databases against CytoSig cytokines
+## Pre-filtered databases against CytoSig cytokines
+
+The full archive of LRI reference databases is `data("dbs_all")`
+
+For this demo, we will be using a subset containing 3 databases
+
 ```{r}
 # load the default databases list of lists
 data("dbs_subset")
@@ -47,7 +52,7 @@ dbs <- dbs_subset
 # Make sure to remove cytosig before 
 ```
 
-# Set up the design matrix for demo data 
+## Set up the design matrix for demo data 
 ```{r}
 # Input treatment: difference between week 0 and week 6
 # input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
@@ -57,17 +62,17 @@ design_mat <- design$design
 dupcor <- design$dupcor
 ```
 
-# run preprocess
+## run preprocessing step
 ```{r}
 preprocess_list <- preprocess_eset(eset, dbs)
 eset_f <- preprocess_list$eset_f
 dbs_f <- preprocess_list$dbs_f
 ```
 
-# Call the databases, 
-# list out the methods to benchmark, 
-# run `cytokinefinder()`
-# The result should return a nested list of benchmark results
+## Call the databases, list out the methods to benchmark,  run `cytokinefinder()`
+
+The result should return a nested list of benchmark results
+
 ```{r, warning=FALSE}
 methods <- c("gsva_limma", 
              "pca_limma")
@@ -82,7 +87,24 @@ results <- run_lri_methods(eset_f,
                           )
 ```
 
-# CytoSig Custom ridge can be run through the following function:
+## To reconstruct the list of benchmarks into a tibble:
+
+`benchlist_to_tbl` will rank the cytokine of interest based on the name assignment provided in `golimumab_treatment`, in this case, as the benchmark results are named by `TNF`, the function will output the ranking of TNF across all method+db combinations.
+
+```{r}
+golimumab_treatment <- list(TNF = list(benchmarks = results))
+golimumab_tibble <- benchlist_to_tbl(results_list = golimumab_treatment,
+                                     study_type = "treatment")
+golimumab_tibble
+```
+
+
+## CytoSig Custom ridge can be run through the following function:
+
+The `cytosig_custom_ridge` function will run differential expression using limma and parse the logFC of all genes in the top table. 
+
+The ridge regression implementation takes the common genes based on the beta coefficients from CytoSig and computes the cytokine signatures accordingly.
+
 ```{r}
 data("cytosig_beta")
 cytosig <- cytosig_custom_ridge(eset, 
@@ -90,12 +112,6 @@ cytosig <- cytosig_custom_ridge(eset,
                      obs_id = obs_id,
                      correlation = dupcor$consensus, 
                      beta_coef = cytosig_beta)
+cytosig
 ```
 
-# Reconstruct the data into a tibble:
-```{r}
-golimumab_treatment <- list(TNF = list(benchmarks = results))
-golimumab_tibble <- benchlist_to_tbl(results_list = golimumab_treatment,
-                                     study_type = "treatment")
-golimumab_tibble
-```
