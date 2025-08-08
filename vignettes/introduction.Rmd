@@ -43,13 +43,14 @@ eset <- golimumab$qc_eset
 
 The full archive of LRI reference databases is `data("dbs_all")`
 
-For this demo, we will be using a subset containing 3 databases
+For this demo, we will be using a subset containing 3 databases specific to cytosig cytokines.
 
 ```{r}
 # load the default databases list of lists
-data("dbs_subset")
-dbs <- dbs_subset
-# Make sure to remove cytosig before 
+data("dbs_cytosig")
+
+# 
+dbs <- dbs_cytosig[names(dbs_cytosig) %in% c("baderlab", "lianaplus", "cellchat")]
 ```
 
 ## Set up the design matrix for demo data 
