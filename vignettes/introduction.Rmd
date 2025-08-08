@@ -1,5 +1,5 @@
 ---
-title: "How to use CytokineFindeR"
+title: "Intro - how to use CytokineFindeR"
 author: "Jeffrey Tang"
 output: rmarkdown::html_vignette
 vignette: >
