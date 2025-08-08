@@ -21,14 +21,14 @@ Imports:
     GSVA,
     limma,
     mixOmics,
-    ggplot2,
     purrr,
     tibble,
     rlang
 Suggests: 
     rmarkdown,
     testthat (>= 3.0.0),
-    BiocManager
+    BiocManager,
+    knitr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
