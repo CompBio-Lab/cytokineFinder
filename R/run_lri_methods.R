@@ -20,7 +20,9 @@
 #' @examples 
 #' # This is the core function for running benchmarks
 #' # Basic usage:
+#' \dontrun{
 #' result <- run_lri_methods(eset, design, dbs, methods = c("fgsea", "pca_limma"))
+#' }
 
 run_lri_methods <- function(eset, design, dbs, methods,
                             treatment = NULL, obs_id = NULL, 
