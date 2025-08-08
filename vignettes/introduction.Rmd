@@ -3,7 +3,7 @@ title: "Intro - how to use CytokineFindeR"
 author: "Jeffrey Tang"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cytokineFindeR}
+  %\VignetteIndexEntry{cytokineFindeR-introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
