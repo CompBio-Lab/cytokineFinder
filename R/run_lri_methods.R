@@ -1,4 +1,4 @@
-#' The wrapper function to run the benchmarking
+#' The core function to run benchmarking of several methods
 #'
 #' @param eset An expression set (numeric matrix) of genes x samples
 #' @param design The design matrix for the data set used to generate the model
@@ -17,7 +17,10 @@
 #'
 #' @importFrom future plan multicore
 #' @importFrom future.apply future_lapply future_sapply
-#' @examples
+#' @examples 
+#' # This is the core function for running benchmarks
+#' # Basic usage:
+#' result <- run_lri_methods(eset, design, dbs, methods = c("fgsea", "pca_limma"))
 
 run_lri_methods <- function(eset, design, dbs, methods,
                             treatment = NULL, obs_id = NULL, 
