@@ -2,13 +2,16 @@
 title: "Polish dbs to protein features"
 author: "Jeffrey Tang"
 date: "2025-08-03"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LRI Database Curation for Benchmarking}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 
 ```{r setup, include=FALSE}
 library(cytokineFindeR)
-library(tidyverse)
 ```
 
 
@@ -89,7 +92,10 @@ cytokine_to_gene_mapping <- list(
 )
 ```
 
-# Remove instances where feature references itself to prevent bias of its own gene expression 
+## The following is a helper function that reduces the LRI dbs down to CytoSig features
+
+- Remove instances where feature references itself to prevent bias of its own gene expression 
+
 ```{r}
 # Single function to create CytoSig only features across databases
 create_cytokine_dbs <- function(dbs_all, cytokine_mapping) {
@@ -103,8 +109,8 @@ create_cytokine_dbs <- function(dbs_all, cytokine_mapping) {
       all_receptors <- unlist(db[genes[genes %in% names(db)]])
       unique_receptors <- unique(all_receptors[!is.na(all_receptors)])
       
-      # Remove naming conflicts with cytokine mapping names
-      unique_receptors[!unique_receptors %in% names(cytokine_mapping)]
+      # Remove only exact cytokine name matches (keep subunit interactions)
+      unique_receptors[unique_receptors != cytokine]
     })
     
     # Name the list and remove empty features
@@ -112,7 +118,9 @@ create_cytokine_dbs <- function(dbs_all, cytokine_mapping) {
     cytokine_features[lengths(cytokine_features) > 0]
   })
 }
+```
 
 # Apply to create cytokine-only databases
+```{r}
 dbs_cytosig <- create_cytokine_dbs(dbs_all, cytokine_to_gene_mapping)
 ```
