@@ -16,8 +16,10 @@ sif/
 **.xlsx
 **.diff
 **.merge
-inst/doc
 renv.lock
+/Meta/
+*.tar.gz
+*.tgz
+inst/doc
 /doc/
 /Meta/
-**.Rd

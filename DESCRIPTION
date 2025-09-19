@@ -4,9 +4,12 @@ Version: 0.0.1.9001
 Authors@R: 
     person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-5633-6123"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Description: A comprehensive toolkit for measuring and analyzing cytokines and 
+    other ligands of interest across multiple analytical methods and biological 
+    databases. Provides functions for data retrieval, statistical analysis, 
+    and visualization of cytokine expression patterns using pre-defined 
+    ligand-receptor interactions.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -27,10 +30,8 @@ Imports:
 Suggests: 
     rmarkdown,
     testthat (>= 3.0.0),
-    BiocManager,
     knitr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
-
