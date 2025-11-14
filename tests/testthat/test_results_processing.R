@@ -6,7 +6,7 @@
 #   - process_method_db() from utils_extract_ligands.R
 
 library(testthat)
-library(cytokineFinder)
+library(cytokineFindeR)
 library(tibble)
 library(dplyr)
 

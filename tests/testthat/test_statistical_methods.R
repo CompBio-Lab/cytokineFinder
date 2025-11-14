@@ -9,7 +9,7 @@
 #   - cytosig_custom_ridge() from stats_cytosig_custom_ridge.R
 
 library(testthat)
-library(cytokineFinder)
+library(cytokineFindeR)
 
 # ============================================================================
 # Setup: Create test fixtures

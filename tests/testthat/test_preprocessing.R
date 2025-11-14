@@ -8,7 +8,7 @@
 #   - create_db_space() from utils_create_db_space.R
 
 library(testthat)
-library(cytokineFinder)
+library(cytokineFindeR)
 
 # ============================================================================
 # Setup: Create test fixtures

@@ -2,7 +2,7 @@
 # Location: R/run_lri_methods.R
 
 library(testthat)
-library(cytokineFinder)
+library(cytokineFindeR)
 
 # ============================================================================
 # Setup: Create test fixtures and helper functions
