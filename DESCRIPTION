@@ -12,29 +12,27 @@ Description: A comprehensive toolkit for measuring and analyzing cytokines and
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 LazyData: true
 Imports: 
     Biobase,
     dplyr,
-    fgsea,
     future,
     future.apply,
-    GEOquery,
-    GSVA,
-    limma,
-    mixOmics,
     purrr,
     tibble,
-    rlang
+    rlang,
+    limma,
+    GSVA,
+    mixOmics,
+    fgsea,
+    GEOquery
 Suggests: 
     rmarkdown,
     testthat (>= 3.0.0),
-    knitr
-Remotes:
-    bioc::GSVA,
-    bioc::mixOmics
+    knitr,
+    testthat
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 4.0)
