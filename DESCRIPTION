@@ -1,6 +1,7 @@
 Package: cytokineFindeR
+Type: Package
 Title: Measure ligands of interest (cytokines) across different methods and databases
-Version: 0.0.1.9001
+Version: 0.99.0
 Authors@R: 
     person("Jeffrey", "Tang", , "jeffrey.tang@hli.ubc.ca", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-5633-6123"))
@@ -11,9 +12,9 @@ Description: A comprehensive toolkit for measuring and analyzing cytokines and
     ligand-receptor interactions.
 License: MIT + file LICENSE
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 LazyData: true
+Depends: 
+    R (>= 4.0)
 Imports: 
     Biobase,
     dplyr,
@@ -29,11 +30,11 @@ Imports:
     GEOquery
 Suggests: 
     rmarkdown,
-    testthat (>= 3.0.0),
     knitr,
-    testthat
-Config/testthat/edition: 3
+    testthat (>= 3.0.0),
+    BiocCheck
+biocViews: Software, GeneExpression, Transcriptomics, DifferentialExpression
 VignetteBuilder: knitr
-Depends: 
-    R (>= 4.0)
-biocViews: Software, GeneExpression, Transcriptomics
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
