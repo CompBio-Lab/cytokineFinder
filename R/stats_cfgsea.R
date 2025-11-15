@@ -3,6 +3,8 @@
 #' @param eset Expression Set object containing gene expression data.
 #' @param design Design matrix generated from create_design()
 #' @param db Ligand-receptor database
+#' @param obs_id A vector of observation IDs to indicate if it's paired data
+#' @param correlation Add a correlation block based on the dupcor package for paired analysis
 #'
 #' @return a table with GSEA results. Each row corresponds to a ligand
 #' @export
@@ -13,6 +15,11 @@
 #' @importFrom fgsea fgsea
 #' 
 #' @examples
+#' # This is part of a series of enrichment analysis methods
+#' # Basic usage:
+#' \dontrun{
+#' gsea_res <- cfgsea(eset, design, dbs)
+#' }
 
 cfgsea <- function(eset, design, db, 
                    obs_id = NULL, correlation = NULL) {

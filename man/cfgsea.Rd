@@ -12,10 +12,21 @@ cfgsea(eset, design, db, obs_id = NULL, correlation = NULL)
 \item{design}{Design matrix generated from create_design()}
 
 \item{db}{Ligand-receptor database}
+
+\item{obs_id}{A vector of observation IDs to indicate if it's paired data}
+
+\item{correlation}{Add a correlation block based on the dupcor package for paired analysis}
 }
 \value{
 a table with GSEA results. Each row corresponds to a ligand
 }
 \description{
 Gene Set Enrichment Analysis
+}
+\examples{
+# This is part of a series of enrichment analysis methods
+# Basic usage:
+\dontrun{
+gsea_res <- cfgsea(eset, design, dbs)
+}
 }
