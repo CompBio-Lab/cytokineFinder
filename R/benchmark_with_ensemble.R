@@ -1,125 +1,120 @@
-#' Create ensemble results combining LRI-based and CytoSig methods
+#' Create ensemble results combining LRI and CytoSig rankings
 #'
-#' This function combines results from LRI-based methods with CytoSig results 
-#' using a rank-based ensemble approach. It performs an inner join between 
-#' LRI and CytoSig results and computes ensemble rankings based on p-values.
+#' Joins LRI-based results with CytoSig results and computes a mean-rank
+#' ensemble score. Uses \code{ties.method = "min"} consistently (refactor R1).
 #'
-#' @param master_tbl A tibble containing benchmark results from benchlist_to_tbl(), 
-#'   with columns: study_type, cytokine, method, database, class, ligand_tables
-#' @param ensemble_method Character string specifying ensemble method. 
-#'   Currently supports "mean_rank" (default)
-#' @param pval_col_lri Character string specifying the p-value column name 
-#'   in LRI method results. Default is "pval"
-#' @param pval_col_cytosig Character string specifying the p-value column name 
-#'   in CytoSig method results. Default is "pval"
+#' @param master_tbl Tibble from \code{benchlist_to_tbl()}, with columns:
+#'   study_type, cytokine, method, database, class, ligand_tables.
+#' @param ensemble_method Currently only \code{"mean_rank"}.
+#' @param pval_col_lri P-value column name in LRI results. Default \code{"pval"}.
+#' @param pval_col_cytosig P-value column name in CytoSig results. Default \code{"pval"}.
 #'
-#' @return A tibble with additional ensemble columns:
-#'   \itemize{
-#'     \item overlap_count: Number of overlapping ligands between LRI and CytoSig
-#'     \item ensemble_table: Combined LRI and CytoSig results with rankings
-#'     \item ensemble_rank: Mean rank score combining LRI and CytoSig rankings
-#'     \item lri_rank: Percentile rank from LRI method (100 = best, 0 = worst)  
-#'     \item cytosig_rank: Percentile rank from CytoSig method (100 = best, 0 = worst)
-#'   }
-#'
-#' @details
-#' The function:
-#' \enumerate{
-#'   \item Filters for LRI-based methods (class == "LRI")
-#'   \item Joins with CytoSig results (class == "CytoSig_Web") by study_type and cytokine
-#'   \item Computes overlap between LRI and CytoSig ligand sets
-#'   \item Creates ensemble rankings using percentile ranks (lower p-value = higher rank)
-#'   \item Falls back to CytoSig-only results when no LRI data is available
-#' }
-#'
-#' Ranking system: Converts p-values to percentile ranks where 100 represents 
-#' the best (lowest p-value) and 0 represents the worst (highest p-value).
-#'
+#' @return \code{master_tbl} (LRI rows only) with added columns:
+#'   overlap_count, ensemble_table, ensemble_rank, lri_rank, cytosig_rank.
 #' @export
 #'
 #' @importFrom dplyr filter left_join select mutate inner_join
 #' @importFrom purrr map2_int pmap map map_dbl
-#'
-#' @examples
-#' master_tbl <- tibble::tibble(
-#'     study_type    = "treatment",
-#'     cytokine      = rep("TNF", 2),
-#'     method        = c("gsva_limma", "cytosig_custom_ridge"),
-#'     database      = c("db1", "cytosig"),
-#'     class         = c("LRI", "CytoSig_Web"),
-#'     ligand_tables = list(
-#'         data.frame(ligand = c("TNF", "IL6"), pval = c(0.01, 0.50)),
-#'         data.frame(ligand = c("TNF", "IL6"), pval = c(0.02, 0.30))
-#'     )
-#' )
-#' result <- create_ensemble_results(master_tbl)
-create_ensemble_results <- function(master_tbl, 
-                                    ensemble_method = "mean_rank",
-                                    pval_col_lri = "pval",
+create_ensemble_results <- function(master_tbl,
+                                    ensemble_method  = "mean_rank",
+                                    pval_col_lri     = "pval",
                                     pval_col_cytosig = "pval") {
-  
+
   master_tbl %>%
     filter(class == "LRI") %>%
     left_join(
-      master_tbl %>% 
-        filter(class == "CytoSig_Web") %>%
+      master_tbl %>%
+        filter(class == "CytoSig_ridge") %>%
         select(study_type, cytokine, cytosig_table = ligand_tables),
       by = c("study_type", "cytokine")
     ) %>%
     mutate(
-      # Count overlap
       overlap_count = map2_int(ligand_tables, cytosig_table, function(lri, cyto) {
-        if(is.null(lri) || is.null(cyto)) return(0L)
+        if (is.null(lri) || is.null(cyto)) return(0L)
         length(intersect(lri$ligand, cyto$ligand))
       }),
-      
-      # Create ensemble table with rank-based approach
-      ensemble_data = pmap(list(ligand_tables, cytosig_table, cytokine), function(lri, cyto, target_cytokine) {
-        if(is.null(cyto)) return(list(ensemble_table = NULL, ensemble_rank = NA, lri_rank = NA, cytosig_rank = NA, source = "no_data"))
-        
-        # Fallback to cytosig only if no LRI data
-        if(is.null(lri) || !target_cytokine %in% lri$ligand) {
-          cyto_ranked <- cyto %>%
-            mutate(cytosig_rank = 100 * (1 - (rank(.data[[pval_col_cytosig]], ties.method = "min") - 1) / n()))
-          
-          target_row <- cyto_ranked %>% filter(ligand == target_cytokine)
-          if(nrow(target_row) == 0) return(list(ensemble_table = NULL, ensemble_rank = NA, lri_rank = NA, cytosig_rank = NA, source = "no_data"))
-          
-          return(list(
-            ensemble_table = cyto_ranked,
-            ensemble_rank = target_row$cytosig_rank,
-            lri_rank = NA,
-            cytosig_rank = target_row$cytosig_rank,
-            source = "cytosig_only"
-          ))
+
+      ensemble_data = pmap(
+        list(ligand_tables, cytosig_table, cytokine),
+        function(lri, cyto, target_cytokine) {
+
+          no_data <- list(ensemble_table = NULL, ensemble_rank = NA_real_,
+                          lri_rank = NA_real_, cytosig_rank = NA_real_,
+                          source = "no_data")
+
+          if (is.null(cyto)) return(no_data)
+
+          # Refactor R1: assign_pct_rank() with ties.method="min" everywhere
+          if (is.null(lri) || !target_cytokine %in% lri$ligand) {
+            cyto_ranked <- cyto %>%
+              mutate(cytosig_rank = assign_pct_rank(.data[[pval_col_cytosig]]))
+            target_row <- cyto_ranked %>% filter(ligand == target_cytokine)
+            if (nrow(target_row) == 0) return(no_data)
+            return(list(
+              ensemble_table = cyto_ranked,
+              ensemble_rank  = target_row$cytosig_rank,
+              lri_rank       = NA_real_,
+              cytosig_rank   = target_row$cytosig_rank,
+              source         = "cytosig_only"
+            ))
+          }
+
+          ensemble_table <- inner_join(lri, cyto, by = "ligand",
+                                       suffix = c("_lri", "_cytosig")) %>%
+            mutate(
+              lri_rank      = assign_pct_rank(.data[[paste0(pval_col_lri, "_lri")]]),
+              cytosig_rank  = assign_pct_rank(.data[[paste0(pval_col_cytosig, "_cytosig")]]),
+              ensemble_rank = (lri_rank + cytosig_rank) / 2
+            )
+
+          target_row <- ensemble_table %>% filter(ligand == target_cytokine)
+          if (nrow(target_row) == 0)
+            return(c(list(ensemble_table = ensemble_table), no_data[-1]))
+
+          list(
+            ensemble_table = ensemble_table,
+            ensemble_rank  = target_row$ensemble_rank,
+            lri_rank       = target_row$lri_rank,
+            cytosig_rank   = target_row$cytosig_rank,
+            source         = "ensemble"
+          )
         }
-        
-        # Create ensemble table (inner join) and compute all ranks at once
-        ensemble_table <- inner_join(lri, cyto, by = "ligand", suffix = c("_lri", "_cytosig")) %>%
-          mutate(
-            # Compute ranks: lower p-value = higher rank (better)
-            lri_rank = 100 * (1 - (rank(.data[[paste0(pval_col_lri, "_lri")]], ties.method = "min") - 1) / n()),
-            cytosig_rank = 100 * (1 - (rank(.data[[paste0(pval_col_cytosig, "_cytosig")]], ties.method = "min") - 1) / n()),
-            ensemble_rank = (lri_rank + cytosig_rank) / 2)
-        
-        # Extract target cytokine results
-        target_row <- ensemble_table %>% filter(ligand == target_cytokine)
-        if(nrow(target_row) == 0) return(list(ensemble_table = ensemble_table, ensemble_rank = NA, lri_rank = NA, cytosig_rank = NA, source = "no_data"))
-        
-        return(list(
-          ensemble_table = ensemble_table,
-          ensemble_rank = target_row$ensemble_rank,
-          lri_rank = target_row$lri_rank,
-          cytosig_rank = target_row$cytosig_rank,
-          source = "ensemble"
-        ))
-      }),
-      
-      # Extract individual components
+      ),
+
       ensemble_table = map(ensemble_data, "ensemble_table"),
-      ensemble_rank = map_dbl(ensemble_data, "ensemble_rank"),
-      lri_rank = map_dbl(ensemble_data, "lri_rank"),
-      cytosig_rank = map_dbl(ensemble_data, "cytosig_rank"),
+      ensemble_rank  = map_dbl(ensemble_data, "ensemble_rank"),
+      lri_rank       = map_dbl(ensemble_data, "lri_rank"),
+      cytosig_rank   = map_dbl(ensemble_data, "cytosig_rank")
     ) %>%
     select(-cytosig_table, -ensemble_data)
+}
+
+
+# ---------------------------------------------------------------------------
+# Refactor R1: shared percentile-rank helper used by ensemble and ranking scripts
+# ---------------------------------------------------------------------------
+
+#' Convert a numeric vector to percentile ranks (100 = best)
+#'
+#' Lower values are ranked better (suitable for p-values). NA values are
+#' excluded from ranking and returned as NA in the output.
+#'
+#' @param values Numeric vector.
+#' @param decreasing Logical. If \code{TRUE}, higher values rank better
+#'   (suitable for coefficients such as \code{abs(coef)} from CytoSig).
+#'   Default \code{FALSE}.
+#' @param ties.method Passed to \code{rank()}. Default \code{"min"}.
+#'
+#' @return Numeric vector of the same length as \code{values}, with values in
+#'   (0, 100]. NA inputs produce NA outputs.
+#' @export
+assign_pct_rank <- function(values, decreasing = FALSE, ties.method = "min") {
+  out <- rep(NA_real_, length(values))
+  ok  <- !is.na(values)
+  if (!any(ok)) return(out)
+  v   <- if (decreasing) -values[ok] else values[ok]
+  r   <- rank(v, ties.method = ties.method)
+  n   <- sum(ok)
+  out[ok] <- 100 * (1 - (r - 1) / n)
+  out
 }

@@ -16,6 +16,7 @@ sif/
 **.xlsx
 **.diff
 **.merge
+*.zip
 renv.lock
 /Meta/
 *.tar.gz
@@ -24,3 +25,7 @@ inst/doc
 /doc/
 /Meta/
 renv/
+.claude/
+docs
+_pkgdown.yml 
+.github/workflows/pkgdown.yaml

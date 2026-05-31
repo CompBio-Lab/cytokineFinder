@@ -1,65 +1,56 @@
-#' Calculate top ligands using a PCA approach from receptor genes given a database 
+#' Rank ligands using PCA on receptor gene sets followed by limma DE
 #'
-#' @param eset Expression Set object containing gene expression data.
-#' @param design Design matrix generated from create_design()
-#' @param db Ligand-receptor database
-#' @param obs_id Optional: provide a vector of sample IDs making sure the order matches with the eset
-#' @param correlation Optional: input the correlation consensus between the samples to evaluate if it is paired data
-#' 
-#' @return a data frame of differentially expressed ligands ordered by p-values
+#' For each ligand in \code{db}, extracts its receptor genes from \code{eset},
+#' computes PC1 across samples, then runs limma to test whether PC1 differs
+#' between conditions. Ligands with fewer than 2 receptor genes with non-zero
+#' variance are silently dropped.
+#'
+#' @param eset Numeric matrix (genes x samples).
+#' @param design Design matrix from \code{create_design()}.
+#' @param db Named list: ligand -> character vector of receptor gene names.
+#' @param obs_id Optional donor ID vector for paired analysis.
+#' @param correlation Optional within-block correlation.
+#'
+#' @return data.frame with columns: ligand, logFC, AveExpr, t, pval, padj, B.
+#'   Returns \code{NULL} if no ligands survive filtering.
 #' @export
 #'
-#' @examples
-#' set.seed(42)
-#' genes   <- paste0("GENE", 1:20)
-#' samples <- paste0("S", 1:8)
-#' eset    <- matrix(rnorm(160), nrow = 20, ncol = 8,
-#'                  dimnames = list(genes, samples))
-#' treatment <- rep(c("ctrl", "trt"), each = 4)
-#' design  <- model.matrix(~ treatment)
-#' rownames(design) <- samples
-#' db <- list(LigandA = genes[1:5], LigandB = genes[6:10])
-#' result <- pca_limma(eset, design, db)
-#' 
 #' @importFrom stats prcomp
-#' @importFrom limma eBayes
-#' @importFrom limma lmFit
-#' @importFrom limma topTable
-#' @importFrom tibble enframe
-#' @importFrom tibble rownames_to_column
+pca_limma <- function(eset, design, db, obs_id = NULL, correlation = NULL) {
 
-pca_limma <- function(eset, 
-                      design, 
-                      db, 
-                      obs_id = NULL, 
-                      correlation = NULL) {
-  # Check if the design matrix is a data frame or matrix
-  if (!is.data.frame(design) && !is.matrix(design)) {
-    stop("The design argument must be a data frame or matrix.")
-  }
-  
-  # Run PCA to get the first PC
-  pc <- lapply(db, function(ligand){
+  if (!is.data.frame(design) && !is.matrix(design))
+    stop("design must be a data.frame or matrix.")
+
+  # Compute PC1 for each ligand's receptor gene set
+  pc_list <- lapply(db, function(receptors) {
     tryCatch({
-      genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
-      prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]  
+      genexp <- t(eset[intersect(rownames(eset), receptors), , drop = FALSE])
+      # Bug fix: pre-filter zero-variance receptor genes before PCA.
+      # prcomp with scale.=TRUE errors on zero-variance columns, which previously
+      # caused the entire ligand to be dropped even when most receptors were
+      # informative. Strip zero-variance genes first; the length>1 check below
+      # then correctly drops only ligands with genuinely insufficient signal.
+      nonzero_cols <- apply(genexp, 2, var) > 0
+      genexp <- genexp[, nonzero_cols, drop = FALSE]
+      prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
     }, error = function(e) NA)
-    })
-  # remove 0 variability ligands
-  pc <- pc[sapply(pc, length) > 1] %>% 
-    do.call(rbind, .)
-  
-  # run DEA using the design matrix integrated from previous create_design()
-  # Check if paired experiment
-  if (!is.null(obs_id)) {
-    fit <- lmFit(pc, design, block = obs_id, correlation = correlation)
-  } else {
-    fit <- lmFit(pc, design)
-  }
-  efit <- eBayes(fit)
-  top <- topTable(efit, coef = 2, number = nrow(efit)) %>%
-    rownames_to_column("ligand") %>%
-    dplyr::rename(pval = P.Value, padj = adj.P.Val)
-  
+  })
+
+  # Keep only ligands where PC1 has >1 value (i.e., >=2 receptor genes with non-zero variance)
+  keep    <- sapply(pc_list, function(x) length(x) > 1)
+  pc_list <- pc_list[keep]
+  if (length(pc_list) == 0) return(NULL)
+
+  # BUG FIX 1: save ligand names before rbind.
+  # do.call(rbind, single-element-list) drops the name and produces rowname "1".
+  lig_names <- names(pc_list)
+  pc        <- do.call(rbind, pc_list)
+  rownames(pc) <- lig_names   # restore correct ligand names
+
+  # Delegate to run_limma() — consistent paired/unpaired handling (refactor R2)
+  top <- run_limma(pc, design, obs_id = obs_id, correlation = correlation)
+
+  # run_limma returns column "genes"; rename to "ligand"
+  top <- dplyr::rename(top, ligand = genes, pval = P.Value, padj = adj.P.Val)
   return(top)
 }

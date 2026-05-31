@@ -1,55 +1,51 @@
-#' Convert nested benchmark results to tibble format
-#' 
-#' @param results_list Nested list of benchmark results (cytokine -> benchmarks -> method -> database -> data) or CytoSig Results (cytokine -> method -> data)
-#' @param study_type Character string identifying the study type
-#' @param has_benchmarks_layer boolean to handle benchmark and cytosig structures
-#' 
-#' @return A tibble with flattened benchmark results
-#' Convert nested results to tibble format (handles both benchmark and cytosig structures)
-#' 
+#' Convert nested benchmark results to a flat tibble
+#'
+#' Handles both the LRI benchmark structure
+#' (\code{cytokine -> benchmarks -> method -> database -> data.frame}) and the
+#' CytoSig structure (\code{cytokine -> method -> data.frame}).
+#'
+#' @param results_list Nested list of benchmark results.
+#' @param study_type Character string identifying the study (e.g. \code{"treatment"}).
+#' @param has_benchmarks_layer Logical. \code{TRUE} for LRI results (default);
+#'   \code{FALSE} for CytoSig results.
+#' @param method_class Character string for the \code{class} column.
+#'   Defaults to \code{"LRI"} when \code{has_benchmarks_layer = TRUE} and
+#'   \code{"CytoSig_ridge"} otherwise. Refactor R5: no longer hardcoded.
+#'
+#' @return A tibble with columns: study_type, cytokine, method, database, class,
+#'   ligand_tables.
+#' @export
+#'
 #' @importFrom purrr imap_dfr
 #' @importFrom tibble tibble
-#'
-#' @examples
-#' results <- list(
-#'     TNF = list(
-#'         benchmarks = list(
-#'             gsva_limma = list(
-#'                 db1 = data.frame(
-#'                     ligand = c("TNF", "IL6"),
-#'                     pval   = c(0.01, 0.50)
-#'                 )
-#'             )
-#'         )
-#'     )
-#' )
-#' benchlist_to_tbl(results, study_type = "treatment")
-#'
-#' @export
-
 benchlist_to_tbl <- function(results_list,
-                             study_type, 
-                             has_benchmarks_layer = TRUE) {
+                             study_type,
+                             has_benchmarks_layer = TRUE,
+                             method_class         = NULL) {
+
+  # Refactor R5: explicit class label, not hardcoded
+  if (is.null(method_class))
+    method_class <- if (has_benchmarks_layer) "LRI" else "CytoSig_ridge"
+
   imap_dfr(results_list, function(cytokine_val, cytokine_name) {
-    # Determine the data to process based on structure
-    if(has_benchmarks_layer) {
-      # Benchmark structure: cytokine -> benchmarks -> method -> database -> data
-      if(!"benchmarks" %in% names(cytokine_val)) return(NULL)
-      data_to_process <- cytokine_val$benchmarks
+    data_to_process <- if (has_benchmarks_layer) {
+      if (!"benchmarks" %in% names(cytokine_val)) return(NULL)
+      cytokine_val$benchmarks
     } else {
-      # CytoSig structure: cytokine -> method -> database -> data
-      data_to_process <- cytokine_val
+      cytokine_val
     }
+
     imap_dfr(data_to_process, function(method_val, method_name) {
       imap_dfr(method_val, function(db_val, db_name) {
-        if(!is.data.frame(db_val)) return(NULL)
-        
-        tibble(study_type = study_type,
-               cytokine = cytokine_name,
-               method = method_name,
-               database = db_name,
-               class = ifelse(has_benchmarks_layer == TRUE, "LRI", "CytoSig_Web"),
-               ligand_tables = list(db_val))
+        if (!is.data.frame(db_val)) return(NULL)
+        tibble(
+          study_type    = study_type,
+          cytokine      = cytokine_name,
+          method        = method_name,
+          database      = db_name,
+          class         = method_class,
+          ligand_tables = list(db_val)
+        )
       })
     })
   })

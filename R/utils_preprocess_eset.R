@@ -69,8 +69,17 @@ filter_db_against_eset <- function(eset, dbs) {
 #' Remove zero variance ligands from the database list of list (internal)
 #'
 #' @description
-#' Filters out ligands that have zero variance across samples using PCA.
-#' Ligands with insufficient variance cannot be meaningfully analyzed.
+#' Filters out ligands whose receptor gene set cannot support PCA after
+#' removing any zero-variance receptor genes. A ligand is only dropped if
+#' fewer than 2 receptor genes remain with non-zero variance, or if PCA
+#' still fails after that pre-filtering step.
+#'
+#' Bug fix: previously, a single zero-variance receptor gene caused prcomp
+#' (with scale.=TRUE) to throw an error, which was caught and treated as if
+#' the entire ligand had zero variance — incorrectly dropping ligands that
+#' had many other informative receptor genes. The fix pre-filters zero-variance
+#' receptor genes before calling prcomp, so only ligands with genuinely
+#' insufficient signal are removed.
 #'
 #' @param eset A numeric matrix representing the expression set
 #' @param dbs A nested list of lists containing the databases, the ligand genes,
@@ -86,6 +95,13 @@ remove_zero_variance_ligands <- function(eset, dbs) {
       pc <- lapply(db, function(ligand){
         tryCatch({
           genexp <- t(eset[intersect(rownames(eset), ligand), , drop=FALSE])
+          # Bug fix: pre-filter zero-variance receptor genes before PCA.
+          # prcomp with scale.=TRUE errors on zero-variance columns, which previously
+          # caused the entire ligand to be dropped even when most receptors were
+          # informative. Strip zero-variance genes first; the length>1 check below
+          # then correctly drops only ligands with genuinely insufficient signal.
+          nonzero_cols <- apply(genexp, 2, var) > 0
+          genexp <- genexp[, nonzero_cols, drop = FALSE]
           prcomp(genexp, center = TRUE, scale. = TRUE, rank. = 1)$x[, "PC1"]
         }, error = function(e) NA)
       })
