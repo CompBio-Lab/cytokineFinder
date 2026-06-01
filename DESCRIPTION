@@ -30,12 +30,14 @@ Suggests:
     knitr,
     pkgdown,
     testthat,
-    BiocCheck
+    BiocCheck,
+    ggplot2
 biocViews: RNASeq, Microarray, GeneExpression, Transcriptomics, DifferentialExpression, GeneSetEnrichment
 VignetteBuilder: knitr
 URL: https://github.com/CompBio-Lab/cytokineFindeR, https://compbio-lab.github.io/cytokineFindeR/
 BugReports: https://github.com/CompBio-Lab/cytokineFindeR/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 LazyData: true
+LazyDataCompression: xz
+Config/roxygen2/version: 8.0.0
