@@ -2,37 +2,33 @@
 % Please edit documentation in R/benchmark_list_to_tbl.R
 \name{benchlist_to_tbl}
 \alias{benchlist_to_tbl}
-\title{Convert nested benchmark results to tibble format}
+\title{Convert nested benchmark results to a flat tibble}
 \usage{
-benchlist_to_tbl(results_list, study_type, has_benchmarks_layer = TRUE)
+benchlist_to_tbl(
+  results_list,
+  study_type,
+  has_benchmarks_layer = TRUE,
+  method_class = NULL
+)
 }
 \arguments{
-\item{results_list}{Nested list of benchmark results (cytokine -> benchmarks -> method -> database -> data) or CytoSig Results (cytokine -> method -> data)}
+\item{results_list}{Nested list of benchmark results.}
 
-\item{study_type}{Character string identifying the study type}
+\item{study_type}{Character string identifying the study (e.g. \code{"treatment"}).}
 
-\item{has_benchmarks_layer}{boolean to handle benchmark and cytosig structures}
+\item{has_benchmarks_layer}{Logical. \code{TRUE} for LRI results (default);
+\code{FALSE} for CytoSig results.}
+
+\item{method_class}{Character string for the \code{class} column.
+Defaults to \code{"LRI"} when \code{has_benchmarks_layer = TRUE} and
+\code{"CytoSig_ridge"} otherwise. Refactor R5: no longer hardcoded.}
 }
 \value{
-A tibble with flattened benchmark results
-Convert nested results to tibble format (handles both benchmark and cytosig structures)
+A tibble with columns: study_type, cytokine, method, database, class,
+ligand_tables.
 }
 \description{
-Convert nested benchmark results to tibble format
-}
-\examples{
-results <- list(
-    TNF = list(
-        benchmarks = list(
-            gsva_limma = list(
-                db1 = data.frame(
-                    ligand = c("TNF", "IL6"),
-                    pval   = c(0.01, 0.50)
-                )
-            )
-        )
-    )
-)
-benchlist_to_tbl(results, study_type = "treatment")
-
+Handles both the LRI benchmark structure
+(\code{cytokine -> benchmarks -> method -> database -> data.frame}) and the
+CytoSig structure (\code{cytokine -> method -> data.frame}).
 }

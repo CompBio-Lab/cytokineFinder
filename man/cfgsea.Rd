@@ -2,36 +2,28 @@
 % Please edit documentation in R/stats_cfgsea.R
 \name{cfgsea}
 \alias{cfgsea}
-\title{Gene Set Enrichment Analysis}
+\title{Rank ligands using fGSEA on limma t-statistics}
 \usage{
 cfgsea(eset, design, db, obs_id = NULL, correlation = NULL)
 }
 \arguments{
-\item{eset}{Expression Set object containing gene expression data.}
+\item{eset}{Numeric matrix (genes x samples).}
 
-\item{design}{Design matrix generated from create_design()}
+\item{design}{Design matrix from \code{create_design()}.}
 
-\item{db}{Ligand-receptor database}
+\item{db}{Named list: ligand -> character vector of receptor gene names.}
 
-\item{obs_id}{A vector of observation IDs to indicate if it's paired data}
+\item{obs_id}{Optional donor ID vector for paired analysis.}
 
-\item{correlation}{Add a correlation block based on the dupcor package for paired analysis}
+\item{correlation}{Optional within-block correlation.}
 }
 \value{
-a table with GSEA results. Each row corresponds to a ligand
+data.frame with fgsea results; one row per ligand. Rows where fgsea
+returns \code{pval = NA} (gene set too small to permute) are retained with
+\code{pval = NA}. The ranking step sets \code{pct_rank = NA} for these
+rows rather than silently ranking them last.
 }
 \description{
-Gene Set Enrichment Analysis
-}
-\examples{
-set.seed(42)
-genes   <- paste0("GENE", 1:50)
-samples <- paste0("S", 1:8)
-eset    <- matrix(rnorm(400), nrow = 50, ncol = 8,
-                 dimnames = list(genes, samples))
-treatment <- rep(c("ctrl", "trt"), each = 4)
-design  <- model.matrix(~ treatment)
-rownames(design) <- samples
-db <- list(LigandA = genes[1:10], LigandB = genes[11:20])
-result <- cfgsea(eset, design, db)
+Runs limma on the full eset to obtain per-gene t-statistics, then uses
+\code{fgsea} to score each ligand's receptor gene set.
 }

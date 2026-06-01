@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_lri_methods.R
 \name{run_lri_methods}
 \alias{run_lri_methods}
-\title{The core function to run benchmarking of several methods}
+\title{Run LRI benchmarking methods across databases}
 \usage{
 run_lri_methods(
   eset,
@@ -16,44 +16,29 @@ run_lri_methods(
 )
 }
 \arguments{
-\item{eset}{An expression set (numeric matrix) of genes x samples}
+\item{eset}{Numeric matrix (genes x samples), pre-filtered by
+\code{preprocess_eset()}.}
 
-\item{design}{The design matrix for the data set used to generate the model}
+\item{design}{Design matrix from \code{create_design()}.}
 
-\item{dbs}{The databases in a list of list format (for package default, use dbs_all)}
+\item{dbs}{Named list of databases (each a named list of receptor gene vectors).}
 
-\item{methods}{A character vector of method names to benchmark. Must be one
-or more of: \code{"gsva_limma"}, \code{"pca_limma"}, \code{"cfgsea"},
-\code{"gsva_plsda"}, \code{"pca_plsda"}, \code{"cytosig_custom_ridge"}.}
+\item{methods}{Character vector of method names. Must be one or more of:
+\code{"cfgsea"}, \code{"pca_limma"}, \code{"gsva_limma"}.}
 
-\item{treatment}{A vector containing the treatment (specific to the demo
-data set, this is to analyze differentially expressed genes between week 0
-and week 6) with the drug gollimumab on Ulcerative colitis patients)}
+\item{treatment}{Condition vector (used for logging only).}
 
-\item{obs_id}{A vector of sample IDs}
+\item{obs_id}{Optional donor ID vector for paired analysis.}
 
-\item{correlation}{the average estimated inter-duplicate correlation for}
+\item{correlation}{Optional within-block correlation.}
 
-\item{verbose}{Logical; if \code{TRUE}, progress messages are printed for each
-method-database combination. Default is \code{FALSE}.}
+\item{verbose}{Logical; print progress messages. Default \code{FALSE}.}
 }
 \value{
-A large BenchmarkResults object containing a nested list of methods
-and the results
+A \code{BenchmarkResults} object (named list: method -> database -> data.frame).
 }
 \description{
-The core function to run benchmarking of several methods
-}
-\examples{
-set.seed(42)
-genes   <- paste0("GENE", 1:50)
-samples <- paste0("S", 1:8)
-eset    <- matrix(rnorm(400), nrow = 50, ncol = 8,
-                 dimnames = list(genes, samples))
-treatment <- rep(c("ctrl", "trt"), each = 4)
-design  <- model.matrix(~ treatment)
-rownames(design) <- samples
-dbs     <- list(db1 = list(LigandA = genes[1:10], LigandB = genes[11:20]))
-result  <- run_lri_methods(eset, design, dbs, methods = "cfgsea",
-                           treatment = treatment)
+Dispatches \code{cfgsea}, \code{pca_limma}, and \code{gsva_limma} across all
+databases in \code{dbs} using parallel execution via \code{future}.
+PLSDA methods have been removed.
 }

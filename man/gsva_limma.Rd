@@ -2,38 +2,25 @@
 % Please edit documentation in R/stats_gsva_limma.R
 \name{gsva_limma}
 \alias{gsva_limma}
-\title{Gene Set Variation Analysis for cytokines (cGSVA)}
+\title{Rank ligands using GSVA scores followed by limma DE}
 \usage{
 gsva_limma(eset, design, db, obs_id = NULL, correlation = NULL)
 }
 \arguments{
-\item{eset}{Expression Set object containing gene expression data.}
+\item{eset}{Numeric matrix (genes x samples).}
 
-\item{design}{Design matrix generated from create_design()}
+\item{design}{Design matrix from \code{create_design()}.}
 
-\item{db}{Ligand-receptor database}
+\item{db}{Named list: ligand -> character vector of receptor gene names.}
 
-\item{obs_id}{Optional: provide a vector of sample IDs making sure the order matches with the eset}
+\item{obs_id}{Optional donor ID vector for paired analysis.}
 
-\item{correlation}{Optional: input the correlation consensus between the samples to evaluate if it is paired data}
+\item{correlation}{Optional within-block correlation.}
 }
 \value{
-top table of all ligands
+data.frame with columns: ligand, logFC, AveExpr, t, pval, padj, B.
 }
 \description{
-Gene Set Variation Analysis for cytokines (cGSVA)
-}
-\examples{
-\donttest{
-set.seed(42)
-genes   <- paste0("GENE", 1:50)
-samples <- paste0("S", 1:8)
-eset    <- matrix(rnorm(400), nrow = 50, ncol = 8,
-                 dimnames = list(genes, samples))
-treatment <- rep(c("ctrl", "trt"), each = 4)
-design  <- model.matrix(~ treatment)
-rownames(design) <- samples
-db      <- list(LigandA = genes[1:10], LigandB = genes[11:20])
-result  <- gsva_limma(eset, design, db)
-}
+Computes GSVA enrichment scores for each ligand's receptor gene set, then
+runs limma to test whether scores differ between conditions.
 }

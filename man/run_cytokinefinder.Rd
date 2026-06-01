@@ -2,38 +2,33 @@
 % Please edit documentation in R/run_cytokinefinder_withList.R
 \name{run_cytokinefinder}
 \alias{run_cytokinefinder}
-\title{Wrapper function to run complete cytokinefinder benchmarking workflow with preprocessing}
+\title{Run the complete cytokineFindeR workflow}
 \usage{
 run_cytokinefinder(study_data, databases, methods)
 }
 \arguments{
-\item{study_data}{Named list containing study data with required elements:
+\item{study_data}{Named list with required elements:
 \itemize{
-\item qc_eset: Quality-controlled expression set matrix
-\item cond: Treatment/condition vector
-\item obs_id: Sample IDs for paired experiments (optional)
+\item \code{qc_eset}: genes x samples numeric matrix (log-normalised counts)
+\item \code{cond}: factor or character vector of condition labels
+\item \code{obs_id}: (optional) donor ID vector for paired analysis
 }}
 
-\item{databases}{List of LRI databases for benchmarking}
+\item{databases}{Named list of LRI databases (e.g. \code{dbs_cytosig}).}
 
-\item{methods}{Vector of method names to benchmark}
+\item{methods}{Character vector of methods to run. Supported:
+\code{"cfgsea"}, \code{"pca_limma"}, \code{"gsva_limma"}.}
 }
 \value{
-Original study_data with added 'benchmarks', 'design', and 'preprocessing' elements
+\code{study_data} with added elements:
+\itemize{
+\item \code{design}: output of \code{create_design()}
+\item \code{benchmarks}: \code{BenchmarkResults} object
+\item \code{preprocessing}: output of \code{preprocess_eset()}
+}
 }
 \description{
-Wrapper function to run complete cytokinefinder benchmarking workflow with preprocessing
-}
-\examples{
-set.seed(42)
-genes      <- paste0("GENE", 1:50)
-eset       <- matrix(rnorm(400), nrow = 50, ncol = 8,
-                     dimnames = list(genes, paste0("S", 1:8)))
-study_data <- list(
-    qc_eset = eset,
-    cond    = rep(c("ctrl", "trt"), each = 4)
-)
-dbs    <- list(db1 = list(LigandA = genes[1:10], LigandB = genes[11:20]))
-result <- run_cytokinefinder(study_data, dbs, methods = "cfgsea")
-names(result)
+Preprocesses the expression matrix, creates the design matrix (with optional
+paired-sample handling via \code{duplicateCorrelation}), and runs all
+requested LRI methods across all databases.
 }

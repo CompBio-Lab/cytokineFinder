@@ -2,7 +2,7 @@
 % Please edit documentation in R/benchmark_with_ensemble.R
 \name{create_ensemble_results}
 \alias{create_ensemble_results}
-\title{Create ensemble results combining LRI-based and CytoSig methods}
+\title{Create ensemble results combining LRI and CytoSig rankings}
 \usage{
 create_ensemble_results(
   master_tbl,
@@ -12,57 +12,20 @@ create_ensemble_results(
 )
 }
 \arguments{
-\item{master_tbl}{A tibble containing benchmark results from benchlist_to_tbl(),
-with columns: study_type, cytokine, method, database, class, ligand_tables}
+\item{master_tbl}{Tibble from \code{benchlist_to_tbl()}, with columns:
+study_type, cytokine, method, database, class, ligand_tables.}
 
-\item{ensemble_method}{Character string specifying ensemble method.
-Currently supports "mean_rank" (default)}
+\item{ensemble_method}{Currently only \code{"mean_rank"}.}
 
-\item{pval_col_lri}{Character string specifying the p-value column name
-in LRI method results. Default is "pval"}
+\item{pval_col_lri}{P-value column name in LRI results. Default \code{"pval"}.}
 
-\item{pval_col_cytosig}{Character string specifying the p-value column name
-in CytoSig method results. Default is "pval"}
+\item{pval_col_cytosig}{P-value column name in CytoSig results. Default \code{"pval"}.}
 }
 \value{
-A tibble with additional ensemble columns:
-\itemize{
-\item overlap_count: Number of overlapping ligands between LRI and CytoSig
-\item ensemble_table: Combined LRI and CytoSig results with rankings
-\item ensemble_rank: Mean rank score combining LRI and CytoSig rankings
-\item lri_rank: Percentile rank from LRI method (100 = best, 0 = worst)
-\item cytosig_rank: Percentile rank from CytoSig method (100 = best, 0 = worst)
-}
+\code{master_tbl} (LRI rows only) with added columns:
+overlap_count, ensemble_table, ensemble_rank, lri_rank, cytosig_rank.
 }
 \description{
-This function combines results from LRI-based methods with CytoSig results
-using a rank-based ensemble approach. It performs an inner join between
-LRI and CytoSig results and computes ensemble rankings based on p-values.
-}
-\details{
-The function:
-\enumerate{
-\item Filters for LRI-based methods (class == "LRI")
-\item Joins with CytoSig results (class == "CytoSig_Web") by study_type and cytokine
-\item Computes overlap between LRI and CytoSig ligand sets
-\item Creates ensemble rankings using percentile ranks (lower p-value = higher rank)
-\item Falls back to CytoSig-only results when no LRI data is available
-}
-
-Ranking system: Converts p-values to percentile ranks where 100 represents
-the best (lowest p-value) and 0 represents the worst (highest p-value).
-}
-\examples{
-master_tbl <- tibble::tibble(
-    study_type    = "treatment",
-    cytokine      = rep("TNF", 2),
-    method        = c("gsva_limma", "cytosig_custom_ridge"),
-    database      = c("db1", "cytosig"),
-    class         = c("LRI", "CytoSig_Web"),
-    ligand_tables = list(
-        data.frame(ligand = c("TNF", "IL6"), pval = c(0.01, 0.50)),
-        data.frame(ligand = c("TNF", "IL6"), pval = c(0.02, 0.30))
-    )
-)
-result <- create_ensemble_results(master_tbl)
+Joins LRI-based results with CytoSig results and computes a mean-rank
+ensemble score. Uses \code{ties.method = "min"} consistently (refactor R1).
 }
