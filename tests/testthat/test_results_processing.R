@@ -109,7 +109,7 @@ test_that("benchlist_to_tbl sets correct class for CytoSig methods", {
 
   result_tbl <- benchlist_to_tbl(results, study_type = "test_study", has_benchmarks_layer = FALSE)
 
-  expect_true(all(result_tbl$class == "CytoSig_Web"))
+  expect_true(all(result_tbl$class == "CytoSig_ridge"))
 })
 
 test_that("benchlist_to_tbl ligand_tables contains data frames", {
