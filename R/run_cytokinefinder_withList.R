@@ -33,6 +33,12 @@ run_cytokinefinder <- function(study_data, databases, methods) {
   eset   <- study_data$qc_eset
   obs_id <- study_data$obs_id %||% NULL
 
+  # Validate that the condition vector matches the number of samples up front,
+  # so the dimension mismatch is reported clearly rather than surfacing deep
+  # inside limma (where run_lri_methods would swallow it via tryCatch).
+  if (length(study_data$cond) != ncol(eset))
+    stop("row dimension of design doesn't match column dimension")
+
   # Preprocess: filter databases against expressed genes, remove zero-variance ligands
   preprocess        <- preprocess_eset(eset, databases)
   eset_f            <- preprocess$eset_f
