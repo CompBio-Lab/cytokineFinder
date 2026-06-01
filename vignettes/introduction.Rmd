@@ -8,13 +8,18 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The following is a brief introduction on the usage of `CytokineFindeR`.
+The following is a brief introduction to the usage of `cytokineFindeR`.
 
-This vignette will outline the following procedures:
-1) Setting up the design matrix for the linear models
-2) Loading in the demo data `golimumab` from `GSE92415` on GEO. The data set is subset specifically for ulcerative colitis cell isolates looking at the gene expression difference for golimumab, which is an anti-TNF drug, between week 0 and week 6. 
-3) Running the benchmark analysis in parallel using `future`
-4) Data visualization which shows p-values 
+This vignette outlines the following procedure:
+
+1. Setting up the design matrix for the linear models.
+2. Loading the demo data `golimumab` (subset from `GSE92415` on GEO). The data
+   set is restricted to ulcerative colitis cell isolates and captures the gene
+   expression difference for golimumab -- an anti-TNF drug -- between Week 0 and
+   Week 6.
+3. Running the benchmark analysis across the available methods and databases.
+4. Reconstructing the nested results into a tidy table and running the CytoSig
+   custom ridge model.
 
 ```{r default-chunk, include = FALSE}
 knitr::opts_chunk$set(
@@ -23,12 +28,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Load the R packages
+## Load the R package
 ```{r setup}
 library(cytokineFindeR)
 ```
 
-Load demo data (GSE92415) which holds a cleaned up expression set and meta data subset for the treatment (golimumab) on ulcerative colitus patients
+Load the demo data (GSE92415), which holds a cleaned-up expression set and the
+metadata subset for the treatment (golimumab) in ulcerative colitis patients.
 ```{r load-data}
 data(golimumab)
 
@@ -40,41 +46,47 @@ eset <- golimumab$qc_eset
 
 ## Pre-filtered databases against CytoSig cytokines
 
-The full archive of LRI reference databases is `data("dbs_all")`
+The full archive of LRI reference databases is available with `data("dbs_all")`.
 
-For this demo, we will be using a subset containing 3 databases specific to cytosig cytokines.
+For this demo we use `dbs_cytosig`, a collection of LRI databases whose
+ligand-receptor sets have been restricted to CytoSig cytokines (see the
+*"LRI Database Curation for Benchmarking"* vignette for how it is built). It
+contains several databases; here we take three source databases as an example.
 
 ```{r load-db}
-# load the default databases list of lists
+# load the databases (a list of lists: database -> ligand -> receptor genes)
 data("dbs_cytosig")
 
-# 
+# pick three source databases for the demo
 dbs <- dbs_cytosig[names(dbs_cytosig) %in% c("baderlab", "lianaplus", "cellchat")]
 ```
 
-## Set up the design matrix for demo data 
+## Set up the design matrix for the demo data
 ```{r create-design_matrix}
-# Input treatment: difference between week 0 and week 6
-# input obs_id if paired data (in this case we do have paired data), GSM IDs different for same sample IDs due to different time points
+# treatment: difference between Week 0 and Week 6.
+# obs_id is supplied because the data are paired (the same donors are measured
+# at both time points, with different GSM IDs), enabling a within-donor design
+# via limma::duplicateCorrelation().
 
 design <- create_design(treatment, obs_id, eset)
 design_mat <- design$design
 dupcor <- design$dupcor
 ```
 
-## run preprocessing step
+## Run the preprocessing step
 ```{r run-preprocess}
 preprocess_list <- preprocess_eset(eset, dbs)
 eset_f <- preprocess_list$eset_f
 dbs_f <- preprocess_list$dbs_f
 ```
 
-## Call the databases, list out the methods to benchmark,  run `cytokinefinder()`
+## List the methods to benchmark and run `run_lri_methods()`
 
-The result should return a nested list of benchmark results
+The result is a nested list of benchmark results (method -> database -> table).
 
 ```{r run-lri_methods, warning=FALSE, eval=FALSE}
-methods <- c("gsva_limma",
+methods <- c("cfgsea",
+             "gsva_limma",
              "pca_limma")
 
 results <- run_lri_methods(eset_f,
@@ -83,13 +95,15 @@ results <- run_lri_methods(eset_f,
                            methods,
                            treatment = treatment,
                            obs_id = obs_id,
-                           correlation = dupcor$consensus
+                           correlation = dupcor$consensus.correlation
                           )
 ```
 
-## To reconstruct the list of benchmarks into a tibble:
+## Reconstruct the list of benchmarks into a tibble
 
-`benchlist_to_tbl` will rank the cytokine of interest based on the name assignment provided in `golimumab_treatment`, in this case, as the benchmark results are named by `TNF`, the function will output the ranking of TNF across all method+db combinations.
+`benchlist_to_tbl()` ranks the cytokine of interest based on the name supplied in
+`golimumab_treatment`. Here the contrast targets TNF, so the function reports the
+ranking of TNF across all method + database combinations.
 
 ```{r find-TNF_identification_performance, eval=FALSE}
 golimumab_treatment <- list(TNF = list(benchmarks = results))
@@ -99,18 +113,19 @@ golimumab_tibble
 ```
 
 
-## CytoSig Custom ridge can be run through the following function:
+## Running the CytoSig custom ridge model
 
-The `cytosig_custom_ridge` function will run differential expression using limma and parse the logFC of all genes in the top table. 
-
-The ridge regression implementation takes the common genes based on the beta coefficients from CytoSig and computes the cytokine signatures accordingly.
+The `cytosig_custom_ridge()` function runs differential expression with `limma`
+and parses the logFC of all genes from the top table. The ridge regression
+implementation takes the common genes based on the beta coefficients from CytoSig
+and computes the cytokine signatures accordingly.
 
 ```{r run-cytosig}
 data("cytosig_beta")
-cytosig <- cytosig_custom_ridge(eset, 
-                     design_mat, 
+cytosig <- cytosig_custom_ridge(eset,
+                     design_mat,
                      obs_id = obs_id,
-                     correlation = dupcor$consensus, 
+                     correlation = dupcor$consensus.correlation,
                      beta_coef = cytosig_beta)
 cytosig
 ```

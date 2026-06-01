@@ -1,0 +1,244 @@
+---
+title: "Comparing GSVA, cfGSEA, and PCA for ligand inference"
+author: "Jeffrey Tang"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing GSVA, cfGSEA, and PCA for ligand inference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r default-chunk, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  dpi = 96
+)
+```
+
+## Motivation
+
+`cytokineFindeR` infers **ligand activity** indirectly: instead of measuring a
+ligand transcript (often low or absent in bulk data), it scores the
+**receptor gene set** for each ligand, taken from a ligand-receptor interaction
+(LRI) database. A ligand whose receptors move coherently with the experimental
+contrast is nominated as differentially active.
+
+Three enrichment strategies are available for turning a receptor gene set into a
+per-ligand statistic, and they are *not* interchangeable:
+
+| Method       | Function       | What it scores                                  | Native statistic |
+|--------------|----------------|-------------------------------------------------|------------------|
+| **cfGSEA**   | `cfgsea()`     | Rank-based enrichment of the receptor set (fgsea on a limma `t` ranking) | NES |
+| **GSVA**     | `gsva_limma()` | Per-sample GSVA enrichment score, then limma on the contrast | limma `t` |
+| **PCA**      | `pca_limma()`  | PC1 of the receptor set per sample, then limma on the contrast | limma `t` |
+
+This vignette benchmarks the three on a real anti-TNF dataset and asks a single,
+concrete question: **do they rank ligands the same way?**
+
+### Why rank concordance is the fair metric
+
+The methods do not share a unit. cfGSEA reports a normalised enrichment score
+(NES); GSVA and PCA report a moderated `t`-statistic from `limma`. Comparing
+those numbers directly is meaningless. What *is* comparable is the **ordering**
+of ligands each method produces. We therefore rank ligands within each method
+(rank 1 = most up-regulated) and measure agreement with **Spearman's rho** on the
+ranks. This is scale-free and answers the practical question a user actually has:
+"if I trust the top of one method's list, would another method put the same
+ligands there?"
+
+```{r setup}
+library(cytokineFindeR)
+```
+
+## The benchmark (pre-computed)
+
+Running all three methods across several databases on the bundled `golimumab`
+data takes a few minutes and requires the full GSVA/fgsea toolchain. To keep the
+vignette fast and dependency-light, the benchmark is **run once** and its
+summary tables are cached in `methods_comparison_cache.rds` (shipped with the
+package). The figures below read that cache.
+
+The chunk that follows is **shown for documentation but not executed here** -- it
+is exactly the code that produced the cache. To reproduce it, set
+`eval = TRUE` and supply the GSVA toolchain.
+
+```{r heavy-compute, eval = FALSE}
+## --- Reproduce the cache (run-once, ~minutes) ------------------------------
+data(golimumab)
+data(dbs_cytosig)
+
+## Representative subset of the 12 CytoSig LRI databases:
+## the consensus DB plus three source DBs. The full set is available in
+## `dbs_cytosig` (see names(dbs_cytosig)).
+reps <- c("aggregated_db", "baderlab", "lianaplus", "cellchat")
+dbs  <- dbs_cytosig[reps]
+
+eset   <- golimumab$qc_eset
+cond   <- golimumab$cond        # Week 0 vs Week 6
+obs_id <- golimumab$obs_id      # donor IDs -> paired design
+
+## Filter the expression set / gene sets, build the paired design
+pre  <- preprocess_eset(eset, dbs)
+dsg  <- create_design(cond, obs_id = obs_id, eset = eset)
+corr <- dsg$dupcor$consensus.correlation
+
+## Run all three methods over all databases
+methods <- c("cfgsea", "gsva_limma", "pca_limma")
+bench <- run_lri_methods(
+  eset = pre$eset_f, design = dsg$design, dbs = pre$dbs_f,
+  methods = methods, treatment = cond, obs_id = obs_id,
+  correlation = corr, verbose = FALSE
+)
+
+## For each method, extract the signed per-ligand effect used for ranking:
+##   cfGSEA -> NES, GSVA -> t, PCA -> t  (rank 1 = largest, i.e. most up)
+## then compute per-database Spearman rho between the three methods' ranks.
+## (Full assembly code is in inst/scripts; the result is the cached object.)
+```
+
+```{r load-cache, echo = FALSE}
+# At vignette build time the working directory is vignettes/, so the cache
+# (shipped alongside this .Rmd) is found by name. After install the same file
+# is copied into inst/doc/, so the relative name still resolves when the
+# rendered vignette is regenerated.
+cache_path <- "methods_comparison_cache.rds"
+have_cache <- file.exists(cache_path)
+if (have_cache) cache <- readRDS(cache_path)
+have_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
+```
+
+```{r cache-meta, echo = FALSE, results = "asis"}
+if (have_cache) {
+  m <- cache$meta
+  cat(sprintf("- **Dataset:** %s\n", m$dataset))
+  cat(sprintf("- **Databases:** %s\n", paste(m$databases, collapse = ", ")))
+  cat(sprintf("- **Design:** %s (consensus correlation = %.2f)\n",
+              m$design, m$consensus_cor))
+  cat(sprintf("- **Ranking rule:** %s\n", m$rank_def))
+  cat(sprintf("- **GSVA version used:** %s; built %s\n",
+              m$gsva_version, m$built_on))
+} else {
+  cat("> Cache not found; figures are skipped. Rebuild with the chunk above.\n")
+}
+```
+
+## Result 1: per-database concordance
+
+For every database, we have three rankings of the same ligands. The table below
+reports Spearman's rho for each pair of methods, per database.
+
+```{r summary-table, echo = FALSE}
+if (have_cache) {
+  st <- cache$summary
+  st_disp <- data.frame(
+    Database          = st$database,
+    `Common ligands`  = st$n_common_ligands,
+    `cfGSEA~GSVA`      = round(st$rho_cfgsea_gsva, 3),
+    `cfGSEA~PCA`       = round(st$rho_cfgsea_pca, 3),
+    `GSVA~PCA`         = round(st$rho_gsva_pca, 3),
+    check.names = FALSE
+  )
+  knitr::kable(st_disp, caption = "Spearman rank concordance per database.")
+}
+```
+
+The pattern is consistent across all databases: **cfGSEA and GSVA agree very
+strongly (rho around 0.9-0.96), while PCA agrees with neither (rho around 0).**
+
+## Result 2: mean concordance heatmap
+
+Averaging the pairwise rho over databases gives a compact picture of how the
+three methods relate.
+
+```{r heatmap, echo = FALSE, fig.alt = "Heatmap of mean Spearman rank concordance between the three methods."}
+if (have_cache && have_ggplot) {
+  ms <- cache$mean_spearman
+  df <- expand.grid(method_x = rownames(ms), method_y = colnames(ms),
+                    stringsAsFactors = FALSE)
+  df$rho <- mapply(function(i, j) ms[i, j], df$method_x, df$method_y)
+  lab <- c(cfgsea = "cfGSEA", gsva_limma = "GSVA", pca_limma = "PCA")
+  df$method_x <- factor(lab[df$method_x], levels = unname(lab))
+  df$method_y <- factor(lab[df$method_y], levels = rev(unname(lab)))
+
+  ggplot2::ggplot(df, ggplot2::aes(method_x, method_y, fill = rho)) +
+    ggplot2::geom_tile(color = "white", linewidth = 0.8) +
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", rho)), size = 5) +
+    ggplot2::scale_fill_gradient2(
+      low = "#0279EE", mid = "#FAF9F3", high = "#FF9400",
+      midpoint = 0, limits = c(-1, 1), name = expression(rho)) +
+    ggplot2::labs(
+      x = NULL, y = NULL,
+      title = "Mean Spearman rank concordance across databases") +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                   axis.text = ggplot2::element_text(face = "bold"))
+} else if (have_cache) {
+  print(round(cache$mean_spearman, 2))
+}
+```
+
+## Result 3: where the rankings agree and disagree
+
+The scatter plots make the table concrete: each point is a ligand, positioned by
+its rank under two methods. Points on the diagonal are ranked identically; a
+tight diagonal cloud means high concordance, a shapeless cloud means none.
+
+```{r scatter, echo = FALSE, fig.height = 4.2, fig.alt = "Per-ligand rank agreement between method pairs, faceted by method pair."}
+if (have_cache && have_ggplot) {
+  pl <- cache$pair_long
+  lab <- c(cfgsea = "cfGSEA", gsva_limma = "GSVA", pca_limma = "PCA")
+  pl$pair <- paste(lab[pl$method_x], "vs", lab[pl$method_y])
+
+  ggplot2::ggplot(pl, ggplot2::aes(rank_x, rank_y)) +
+    ggplot2::geom_abline(slope = 1, intercept = 0,
+                         color = "grey70", linetype = 2) +
+    ggplot2::geom_point(ggplot2::aes(color = database), alpha = 0.6, size = 1.4) +
+    ggplot2::facet_wrap(~ pair) +
+    ggplot2::scale_color_manual(
+      values = c(aggregated_db = "#000000", baderlab = "#FF9400",
+                 lianaplus = "#75A025", cellchat = "#0279EE"),
+      name = "Database") +
+    ggplot2::labs(
+      x = "Rank (method on x)", y = "Rank (method on y)",
+      title = "Per-ligand rank agreement between methods") +
+    ggplot2::theme_bw(base_size = 11) +
+    ggplot2::theme(legend.position = "bottom")
+} else if (have_cache) {
+  cat("Install ggplot2 to render the rank-agreement scatter plots.\n")
+}
+```
+
+The **cfGSEA vs GSVA** panel hugs the diagonal; the two PCA panels are diffuse.
+
+## Interpretation
+
+This divergence is expected once you look at *what each method measures*:
+
+- **cfGSEA and GSVA both summarise the receptor set as a whole.** cfGSEA asks
+  whether the receptor genes are enriched toward the top of a differential
+  ranking; GSVA builds a per-sample enrichment score from the same set and tests
+  it. Both are, in effect, **"is this set coherently up or down?"** statistics, so
+  they order ligands almost identically.
+
+- **PCA scores a different quantity.** `pca_limma()` reduces the receptor set to
+  its first principal component -- the dominant **axis of covariation** among the
+  receptors -- and tests whether *that axis* shifts with the contrast. PC1 can be
+  driven by a few high-variance receptors and need not point in the direction of
+  mean enrichment. It can even be sign-arbitrary. So PCA answers a related but
+  distinct question and produces a near-orthogonal ranking.
+
+**Practical guidance.** If the goal is to nominate ligands whose receptor sets
+move coherently with a treatment (the usual `cytokineFindeR` use case), cfGSEA
+and GSVA are mutually corroborating and either is a reasonable default. PCA is
+best read as a complementary view that flags ligands whose receptors have strong
+*structured covariation* -- useful, but it should not be expected to agree with
+the enrichment-based methods, and its results warrant separate interpretation.
+
+## Session information
+
+```{r session-info}
+sessionInfo()
+```

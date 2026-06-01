@@ -1,7 +1,6 @@
 ---
 title: "LRI Database Curation for Benchmarking"
 author: "Jeffrey Tang"
-date: "2025-08-03"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{LRI Database Curation for Benchmarking}
@@ -9,49 +8,65 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r default-chunk, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 ```{r setup, include=FALSE}
 library(cytokineFindeR)
 ```
 
-# Load the LRI database 
+This vignette documents how the bundled `dbs_cytosig` object is derived from the
+raw LRI archive `dbs_all`. The goal is to restrict each database's
+ligand-receptor sets to the cytokines covered by CytoSig, so that every method in
+the benchmark scores the same panel of ligands.
+
+# Load the LRI databases
+
+`dbs_all` is a list of databases; each database is itself a named list mapping a
+ligand to its receptor genes.
+
 ```{r load-db}
 data("dbs_all")
+names(dbs_all)
 ```
 
 
-## For the benchmarking we are only interested in CytoSig outputs
+## A CytoSig-specific cytokine-to-gene mapping
 
-Created a mapping of potential gene product subunits that pertain to each cytokine specific to CytoSig
-
-- Some cytokines may have multi-subunits 
+For benchmarking we keep only ligands present in the CytoSig panel. The mapping
+below translates each CytoSig cytokine label to its gene symbol(s); some
+cytokines are multi-subunit and therefore map to several genes.
 
 ```{r list-cytokines}
-# Cytokine to Gene Mapping - Only for CytoSig list
+# Cytokine-to-gene mapping (CytoSig panel only)
 cytokine_to_gene_mapping <- list(
   "INHBA" = "INHBA",
-  "BDNF" = "BDNF", 
+  "BDNF" = "BDNF",
   "BMP2" = "BMP2",
   "BMP4" = "BMP4",
-  "BMP6" = "BMP6", 
+  "BMP6" = "BMP6",
   "BMP7" = "BMP7",
   "CCL2" = "CCL2",
   "CXCL12" = "CXCL12",
   "EGF" = "EGF",
   "EPO" = "EPO",
   "FGF2" = "FGF2",
-  "GDF11" = "GDF11", 
+  "GDF11" = "GDF11",
   "HGF" = "HGF",
   "HMGB1" = "HMGB1",
   "IFNG" = "IFNG",
   "IGF1" = "IGF1",
   "IL10" = "IL10",
   "IL13" = "IL13",
-  "IL15" = "IL15", 
+  "IL15" = "IL15",
   "IL17A" = "IL17A",
   "IL18" = "IL18",
   "IL1A" = "IL1A",
-  "IL1B" = "IL1B", 
+  "IL1B" = "IL1B",
   "IL2" = "IL2",
   "IL21" = "IL21",
   "IL22" = "IL22",
@@ -60,7 +75,7 @@ cytokine_to_gene_mapping <- list(
   "IL4" = "IL4",
   "IL6" = "IL6",
   "INS" = "INS",
-  "LIF" = "LIF", 
+  "LIF" = "LIF",
   "LTA" = "LTA",
   "NRG1" = "NRG1",
   "OSM" = "OSM",
@@ -70,13 +85,13 @@ cytokine_to_gene_mapping <- list(
   "TGFB1" = "TGFB1",
   "TGFB3" = "TGFB3",
   "TSLP" = "TSLP",
-  "VEGFA" = "VEGFA", 
+  "VEGFA" = "VEGFA",
   "WNT3A" = "WNT3A",
   "WNT5A" = "WNT5A",
-  
-  # Single gene conversions (name changes)
+
+  # Single-gene conversions (name changes)
   "CD40L" = "CD40LG",
-  "GCSF" = "CSF3", 
+  "GCSF" = "CSF3",
   "GMCSF" = "CSF2",
   "IFN1" = "IFNA1",
   "IFNL" = "IFNL1",
@@ -85,42 +100,57 @@ cytokine_to_gene_mapping <- list(
   "TRAIL" = "TNFSF10",
   "TWEAK" = "TNFSF12",
   "PGE2" = "PTGS2",
-  # Multi-subunit cytokines (only ones in CytoSig list)
+
+  # Multi-subunit cytokines (only those in the CytoSig list)
   "IL12" = c("IL12A", "IL12B"),
-  "IL27" = c("IL27A", "EBI3"), 
+  "IL27" = c("IL27A", "EBI3"),
   "IL36" = c("IL36A", "IL36B", "IL36G")
 )
 ```
 
-## The following is a helper function that reduces the LRI dbs down to CytoSig features
+## Helper: reduce each LRI database to CytoSig features
 
-- Remove instances where feature references itself to prevent bias of its own gene expression 
+The helper below walks every database and, for each CytoSig cytokine, gathers the
+union of receptor genes across that cytokine's gene symbol(s). Self-references
+(where a receptor entry equals the cytokine name itself) are removed to avoid a
+ligand scoring its own expression.
 
 ```{r helper-fun}
-# Single function to create CytoSig only features across databases
+# Build CytoSig-only features across databases
 create_cytokine_dbs <- function(dbs_all, cytokine_mapping) {
   # For each database
   lapply(dbs_all, function(db) {
-    # For each cytokine in mapping
+    # For each cytokine in the mapping
     cytokine_features <- lapply(names(cytokine_mapping), function(cytokine) {
       genes <- cytokine_mapping[[cytokine]]
-      
+
       # Get all receptors for these genes (ignore missing genes)
       all_receptors <- unlist(db[genes[genes %in% names(db)]])
       unique_receptors <- unique(all_receptors[!is.na(all_receptors)])
-      
-      # Remove only exact cytokine name matches (keep subunit interactions)
+
+      # Remove only exact cytokine-name matches (keep subunit interactions)
       unique_receptors[unique_receptors != cytokine]
     })
-    
-    # Name the list and remove empty features
+
+    # Name the list and drop empty features
     names(cytokine_features) <- names(cytokine_mapping)
     cytokine_features[lengths(cytokine_features) > 0]
   })
 }
 ```
 
-# Apply to create cytokine-only databases
+# Build the CytoSig-only databases
+
 ```{r create-db}
 dbs_cytosig <- create_cytokine_dbs(dbs_all, cytokine_to_gene_mapping)
+
+# how many cytokines survived in each database?
+lengths(dbs_cytosig)
+```
+
+The resulting `dbs_cytosig` is the object used throughout the other vignettes and
+in the method benchmark.
+
+```{r session-info}
+sessionInfo()
 ```

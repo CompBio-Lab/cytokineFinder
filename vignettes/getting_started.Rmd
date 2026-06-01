@@ -1,0 +1,118 @@
+---
+title: "Getting started with cytokineFindeR"
+author: "Jeffrey Tang"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with cytokineFindeR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r default-chunk, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## What `cytokineFindeR` does
+
+Ligands such as cytokines are often hard to quantify directly from bulk
+transcriptomics: the ligand transcript may be lowly expressed, produced by a
+different cell type, or regulated post-transcriptionally. `cytokineFindeR` takes
+an indirect route. For each ligand it collects the genes encoding that ligand's
+**receptors** from a ligand-receptor interaction (LRI) database, treats those
+receptor genes as a **gene set**, and scores how that set responds to an
+experimental contrast. Ligands whose receptor sets move coherently with the
+contrast are nominated as differentially active.
+
+In short: **receptor gene set as a proxy for ligand activity.**
+
+## The three scoring methods
+
+A receptor gene set can be turned into a per-ligand statistic in three ways, all
+exposed as functions:
+
+- `cfgsea()` -- fgsea enrichment of the receptor set against a `limma`-ranked
+  gene list (native statistic: NES).
+- `gsva_limma()` -- a per-sample GSVA enrichment score for the receptor set,
+  tested across the contrast with `limma` (native statistic: moderated `t`).
+- `pca_limma()` -- the first principal component of the receptor set per sample,
+  tested across the contrast with `limma` (native statistic: moderated `t`).
+
+`run_lri_methods()` runs any combination of these across one or more databases
+and returns a nested list of results. The companion vignette *"Comparing GSVA,
+cfGSEA, and PCA for ligand inference"* benchmarks how concordant the three are
+(short answer: cfGSEA and GSVA agree closely; PCA measures something different).
+
+## The typical workflow
+
+```{r setup}
+library(cytokineFindeR)
+```
+
+The package ships a self-contained demo: `golimumab` (a cleaned anti-TNF
+expression set from GSE92415, ulcerative colitis, Week 0 vs Week 6) and several
+curated LRI databases.
+
+```{r data-shapes}
+data(golimumab)
+data(dbs_cytosig)
+
+## Expression matrix: genes x samples
+dim(golimumab$qc_eset)
+
+## Paired design: the same donors at two time points
+table(golimumab$cond)
+length(unique(golimumab$obs_id))
+
+## Curated LRI databases (each is a named list: ligand -> receptor genes)
+names(dbs_cytosig)
+```
+
+A complete analysis is four steps:
+
+1. **Build the design.** `create_design()` constructs the contrast and, when
+   `obs_id` identifies repeated donors, fits `limma::duplicateCorrelation()` for
+   a paired analysis.
+
+   ```{r design, eval = FALSE}
+   design <- create_design(golimumab$cond, golimumab$obs_id, golimumab$qc_eset)
+   ```
+
+2. **Preprocess.** `preprocess_eset()` restricts the expression set to genes that
+   appear in the chosen databases and drops degenerate (zero-variance) receptor
+   sets.
+
+   ```{r preprocess, eval = FALSE}
+   pre <- preprocess_eset(golimumab$qc_eset, dbs_cytosig)
+   ```
+
+3. **Run the methods.** `run_lri_methods()` applies the selected methods over the
+   databases.
+
+   ```{r run, eval = FALSE}
+   bench <- run_lri_methods(
+     pre$eset_f, design$design, pre$dbs_f,
+     methods = c("cfgsea", "gsva_limma", "pca_limma"),
+     treatment = golimumab$cond, obs_id = golimumab$obs_id,
+     correlation = design$dupcor$consensus.correlation
+   )
+   ```
+
+4. **Summarise / rank.** `benchlist_to_tbl()` flattens the nested results into a
+   tidy table and can rank a ligand of interest (e.g. TNF) across every
+   method-database combination.
+
+## Where to go next
+
+- **End-to-end usage** with code you can run: the *"cytokineFindeR-introduction"*
+  vignette.
+- **Method benchmarking** (do the methods agree?): the *"Comparing GSVA, cfGSEA,
+  and PCA for ligand inference"* vignette.
+- **Building your own LRI gene sets** from the raw databases: the *"LRI Database
+  Curation for Benchmarking"* vignette.
+
+```{r session-info}
+sessionInfo()
+```
