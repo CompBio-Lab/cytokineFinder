@@ -23,7 +23,6 @@ Imports:
     rlang,
     limma,
     GSVA,
-    mixOmics,
     fgsea,
     GEOquery
 Suggests:

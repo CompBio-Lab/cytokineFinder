@@ -84,28 +84,6 @@ test_that("run_lri_methods processes multiple databases", {
 })
 
 # ============================================================================
-# Test 1.2.2: PLSDA Method Handling
-# ============================================================================
-
-test_that("run_lri_methods applies PLSDA-specific parameters", {
-  eset <- create_test_eset(n_genes = 100, n_samples = 10)
-  cond <- rep(c("control", "treatment"), each = 5)
-  design <- create_design(cond)
-  databases <- list(
-    db1 = list(IL6 = c("GENE_1", "GENE_2", "GENE_3"))
-  )
-  methods <- c("gsva_plsda")
-
-  result <- run_lri_methods(
-    eset, design$design, databases, methods,
-    treatment = cond
-  )
-
-  expect_is(result, "BenchmarkResults")
-  expect_true("gsva_plsda" %in% names(result))
-})
-
-# ============================================================================
 # Test 1.2.3: Paired Design Support
 # ============================================================================
 

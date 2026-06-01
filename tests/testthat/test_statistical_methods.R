@@ -4,8 +4,6 @@
 #   - run_limma() from stats_run_limma.R
 #   - gsva_limma() from stats_gsva_limma.R
 #   - pca_limma() from stats_cpca_limma.R
-#   - gsva_plsda() from stats_gsva_plsda.R
-#   - pca_plsda() from stats_cpca_plsda.R
 #   - cytosig_custom_ridge() from stats_cytosig_custom_ridge.R
 
 library(testthat)
@@ -226,91 +224,6 @@ test_that("pca_limma handles zero-variance ligands gracefully", {
   )
 
   result <- pca_limma(eset, design$design, db)
-
-  expect_is(result, "data.frame")
-})
-
-# ============================================================================
-# Test gsva_plsda() - GSVA + PLS-DA
-# ============================================================================
-
-test_that("gsva_plsda computes GSVA and fits PLS-DA model", {
-  eset <- create_test_eset()
-  cond <- rep(c("control", "treatment"), each = 5)
-  db <- create_test_db()
-
-  result <- gsva_plsda(eset, cond, db)
-
-  expect_is(result, "data.frame")
-  expect_true("ligand" %in% colnames(result))
-  expect_true("coef" %in% colnames(result))
-})
-
-test_that("gsva_plsda returns numeric coefficients", {
-  eset <- create_test_eset()
-  cond <- rep(c("control", "treatment"), each = 5)
-  db <- create_test_db()
-
-  result <- gsva_plsda(eset, cond, db)
-
-  expect_true(all(is.numeric(result$coef)))
-})
-
-test_that("gsva_plsda handles binary treatment", {
-  eset <- create_test_eset()
-  treatment <- rep(c("A", "B"), each = 5)
-  db <- create_test_db()
-
-  result <- gsva_plsda(eset, treatment, db)
-
-  expect_is(result, "data.frame")
-})
-
-test_that("gsva_plsda handles multi-class treatment", {
-  eset <- create_test_eset(n_samples = 12)
-  treatment <- rep(c("A", "B", "C"), each = 4)
-  db <- create_test_db()
-
-  result <- gsva_plsda(eset, treatment, db)
-
-  expect_is(result, "data.frame")
-})
-
-# ============================================================================
-# Test pca_plsda() - PCA + PLS-DA
-# ============================================================================
-
-test_that("pca_plsda computes PC1 for receptors and fits PLS-DA", {
-  eset <- create_test_eset()
-  cond <- rep(c("control", "treatment"), each = 5)
-  db <- create_test_db()
-
-  result <- pca_plsda(eset, cond, db)
-
-  expect_is(result, "data.frame")
-  expect_true("ligand" %in% colnames(result))
-  expect_true("coef" %in% colnames(result))
-})
-
-test_that("pca_plsda coefficients are numeric and non-zero", {
-  eset <- create_test_eset()
-  cond <- rep(c("control", "treatment"), each = 5)
-  db <- create_test_db()
-
-  result <- pca_plsda(eset, cond, db)
-
-  expect_true(all(is.numeric(result$coef)))
-})
-
-test_that("pca_plsda handles zero-variance ligands gracefully", {
-  eset <- create_test_eset()
-  cond <- rep(c("control", "treatment"), each = 5)
-  db <- list(
-    MultiGene = c("GENE_1", "GENE_2", "GENE_3"),
-    SingleGene = c("GENE_50")
-  )
-
-  result <- pca_plsda(eset, cond, db)
 
   expect_is(result, "data.frame")
 })
