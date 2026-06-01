@@ -15,7 +15,7 @@
 #'   Returns \code{NULL} if no ligands survive filtering.
 #' @export
 #'
-#' @importFrom stats prcomp
+#' @importFrom stats prcomp var
 pca_limma <- function(eset, design, db, obs_id = NULL, correlation = NULL) {
 
   if (!is.data.frame(design) && !is.matrix(design))
